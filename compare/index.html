@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local vs. National Trends</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  COMPLETE HOME ADVISORS - LOCAL VS. NATIONAL TRENDS
+  Data: compare/data.json (Realtor.com Economic Research via FRED), refreshed daily
+  by scripts/update_compare.py (.github/workflows/update-market.yml). Nothing to edit by hand.
+-->
+<style>
+:root{--ink:#1b1a18;--ink-2:#4a4743;--ink-3:#77726b;--surface:#fcfcfb;--card:#fff;--line:#e7e3dc;--grid:#efece6;--black:#141414;--sun:#F2B705;--sun-soft:#fff4cf;--radius:14px}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--surface);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 40px}
+h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}h2{font-size:clamp(24px,3.2vw,32px);line-height:1.15}h3{font-size:21px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.muted{color:var(--ink-2)}.small{font-size:13px}
+.top{margin-bottom:22px}.top p{margin:10px 0 0;max-width:700px}.rule{height:3px;width:64px;background:var(--sun);border-radius:2px;margin:12px 0 0}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block;flex:none}.sw.line{height:3px;width:16px;border-radius:2px}
+.hero{background:var(--black);color:#fff;border-radius:20px;padding:28px 26px 22px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(242,183,5,.22),rgba(242,183,5,0) 70%)}
+.hero .eyebrow{color:var(--sun)}.hero h2{color:#fff;margin-top:6px}
+.hero .sub{color:#cfcac2;margin:6px 0 0;max-width:760px}
+.score{position:relative;z-index:1;margin-top:18px;overflow-x:auto}
+.score table{border-collapse:collapse;width:100%;min-width:640px;font-variant-numeric:tabular-nums}
+.score th,.score td{padding:11px 12px;border-bottom:1px solid #2e2d2b;text-align:right;vertical-align:top}
+.score th:first-child,.score td:first-child{text-align:left}
+.score thead th{font-size:13px;font-weight:600;color:#f3efe8}
+.score thead th span{display:inline-flex;align-items:center;gap:6px}
+.score td:first-child{font-size:13.5px;color:#e6e1d9}
+.score td:first-child small{display:block;color:#9a948b;font-size:11.5px}
+.score .v{font-size:15px;font-weight:600;color:#fff}
+.score .c{display:block;font-size:12.5px;color:#bdb7ae}
+.score .c.up{color:var(--sun)}
+.score td.us{background:rgba(255,255,255,.04)}
+.takes{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.take{border-top:1px solid #34322f;padding-top:10px;font-size:13.5px;color:#e6e1d9}
+.take b{display:block;color:var(--sun);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+section{margin-top:40px}
+.sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}.sec-head p{margin:4px 0 0;max-width:720px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pills button{border:1px solid var(--line);background:#fff;font:600 13px Inter,sans-serif;color:var(--ink-2);padding:7px 12px;border-radius:999px;cursor:pointer}
+.pills button[aria-pressed="true"]{background:var(--black);color:#fff;border-color:var(--black)}
+.ranges{display:inline-flex;background:#efebe4;border-radius:999px;padding:4px;gap:2px}
+.ranges button{border:0;background:transparent;font:600 13px Inter,sans-serif;color:var(--ink-2);padding:7px 13px;border-radius:999px;cursor:pointer}
+.ranges button[aria-pressed="true"]{background:var(--black);color:#fff}
+button:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--ink-2);margin:0 0 6px}.legend span{display:inline-flex;align-items:center;gap:6px}
+.cdesc{font-size:13px;color:var(--ink-2);margin:0 0 8px}
+.chart{position:relative}.chart svg{display:block;width:100%;height:auto;overflow:visible}.chart text{font-family:Inter,sans-serif}
+.tip{position:absolute;pointer-events:none;background:var(--black);color:#fff;font-size:12.5px;padding:8px 10px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-8px;opacity:0;transition:opacity .12s;z-index:5;font-variant-numeric:tabular-nums}
+.tip .t{font-weight:600;margin-bottom:3px}.tip .r{display:flex;align-items:center;gap:6px}
+.how{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.how .card p{margin:6px 0 0;font-size:14px;color:var(--ink-2)}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}footer p{margin:6px 0}footer a{color:var(--ink-2)}
+@media (max-width:820px){.takes,.how{grid-template-columns:1fr}.hero{padding:22px 18px 18px}}
+@media (max-width:560px){.chart text{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Complete Home Advisors · Market Report</div>
+    <h1>Local vs. National Trends</h1>
+    <div class="rule"></div>
+    <p class="muted">How Lawrence, Kansas City and Johnson County compare with the country as a whole. Every number here comes from the same source and is measured the same way, so the comparison is apples to apples.</p>
+  </header>
+
+  <div class="hero">
+    <div class="eyebrow" id="asOf"></div>
+    <h2>Our markets vs. the U.S.</h2>
+    <p class="sub">Latest month for homes listed for sale, with the change from a year earlier underneath.</p>
+    <div class="score"><table id="score"></table></div>
+    <div class="takes" id="takes"></div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <div><div class="eyebrow">Trends over time</div><h2>Compare a trend</h2></div>
+      <div class="ranges" role="group" aria-label="Time range"><button data-r="13">1Y</button><button data-r="37" aria-pressed="true">3Y</button><button data-r="0">All</button></div>
+    </div>
+    <div class="card">
+      <div class="pills" role="group" aria-label="Choose a measure" id="pills"></div>
+      <p class="cdesc" id="cdesc"></p>
+      <div class="legend" id="legend"></div>
+      <div class="chart" id="chart"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><div class="eyebrow">Reading this page</div><h2>How to use these numbers</h2></div></div>
+    <div class="how">
+      <div class="card"><h3>Trends, not exact values</h3><p>This data covers homes listed for sale (asking prices, listing counts, time on market), not closed sales. It's best for comparing direction: is inventory rising faster here than nationally? Are prices cooling sooner? For local sold prices, see our monthly MLS report.</p></div>
+      <div class="card"><h3>Why compare to the U.S.?</h3><p>National headlines often don't match what's happening here. Comparing side by side shows whether our markets are hotter, cooler or simply following the national pattern, which helps with pricing and timing decisions.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p id="srcLine"><strong>Source:</strong> <a href="https://www.realtor.com/research/data/" target="_blank" rel="noopener">Realtor.com® Economic Research</a> monthly housing inventory data, retrieved from FRED, Federal Reserve Bank of St. Louis. Updated monthly.</p>
+    <p>Lawrence = Lawrence, KS metro area (Douglas County). Kansas City = Kansas City metro area, Kansas and Missouri. Johnson County = Johnson County, KS. Includes single-family homes and condos/townhomes listed for sale. These figures differ from MLS sold-home statistics because they measure listings, not closings. For general information only; not financial advice.</p>
+  </footer>
+</div>
+
+<script>
+const GEOS=[{k:"law",name:"Lawrence",color:"#D9731A"},{k:"kc",name:"Kansas City",color:"#2E64A8"},{k:"jo",name:"Johnson County",color:"#1F8A70"},{k:"us",name:"U.S.",color:"#8E4FB8",dash:true}];
+const $=s=>document.querySelector(s), NS="http://www.w3.org/2000/svg";
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const mLong=m=>["January","February","March","April","May","June","July","August","September","October","November","December"][+m.slice(5)-1]+" "+m.slice(0,4);
+const mLbl=m=>MON[+m.slice(5)-1]+" ’"+m.slice(2,4);
+const ok=v=>v!==null&&v!==undefined&&!isNaN(v);
+const money=n=>"$"+Math.round(n).toLocaleString("en-US"), int=n=>Math.round(n).toLocaleString("en-US");
+const sgn=(v,d=1,suf="%")=>(v>0?"+":v<0?"−":"±")+Math.abs(v).toFixed(d)+suf;
+function el(t,a={},p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function txt(p,x,y,s,a={}){const t=el("text",Object.assign({x,y,"font-size":12,fill:"#77726b"},a),p);t.textContent=s;return t;}
+
+let D={}, MONTHS=[], metric="price", range=37;
+// per geo: map month -> {price,active,new,pending,dom,cuts, cutShare, pendRatio}
+function build(d){
+  const cols=d.columns; MONTHS=[...new Set(Object.values(d.geos).flatMap(rows=>rows.map(r=>r[0])))].sort();
+  GEOS.forEach(g=>{ const m={}; (d.geos[g.k]||[]).forEach(r=>{ const o={}; cols.forEach((c,i)=>o[c]=r[i]);
+    o.cutShare=ok(o.cuts)&&o.active?o.cuts/o.active*100:null; o.pendRatio=ok(o.pending)&&o.active?o.pending/o.active*100:null; m[r[0]]=o; }); D[g.k]=m; });
+}
+const yearAgo=m=>(+m.slice(0,4)-1)+m.slice(4);
+function yoy(g,m,key,kind){ const a=D[g][m], b=D[g][yearAgo(m)]; if(!a||!b||!ok(a[key])||!ok(b[key])) return null; return kind==="pct"?(a[key]-b[key])/b[key]*100:a[key]-b[key]; }
+
+const METRICS=[
+  {k:"price",label:"Median list price",small:"Asking price, middle of the market",val:v=>money(v),kind:"pct",plot:"yoy",desc:"Change in the median asking price from the same month a year earlier."},
+  {k:"active",label:"Active listings",small:"Homes for sale (inventory)",val:int,kind:"pct",plot:"yoy",desc:"Change in the number of homes for sale from a year earlier. Rising inventory gives buyers more choice."},
+  {k:"new",label:"New listings",small:"Homes newly put on the market",val:int,kind:"pct",plot:"yoy",desc:"Change in newly listed homes from a year earlier: are more sellers coming to market?"},
+  {k:"pending",label:"Pending listings",small:"Homes under contract",val:int,kind:"pct",plot:"yoy",desc:"Change in homes under contract from a year earlier, an early read on buyer demand."},
+  {k:"dom",label:"Median days on market",small:"Typical time a listing sits",val:v=>int(v)+" days",kind:"diff",suf:" days",d:0,plot:"level",unit:v=>int(v),desc:"How long the typical listing has been on the market. Lower means homes are moving faster."},
+  {k:"cutShare",label:"Listings with a price cut",small:"Share of homes for sale",val:v=>v.toFixed(1)+"%",kind:"diff",suf:" pts",d:1,plot:"level",unit:v=>v.toFixed(0)+"%",desc:"Share of homes for sale that have reduced their price. A rising share means sellers are having to adjust."},
+  {k:"pendRatio",label:"Pending ratio",small:"Under contract ÷ for sale",val:v=>v.toFixed(0)+"%",kind:"diff",suf:" pts",d:0,plot:"level",unit:v=>v.toFixed(0)+"%",desc:"Homes under contract compared with homes for sale. Higher means demand is strong relative to supply."}
+];
+
+function renderScore(){
+  // latest month where every geo has data
+  const latest=[...MONTHS].reverse().find(m=>GEOS.every(g=>D[g.k][m]&&ok(D[g.k][m].price)));
+  $("#asOf").textContent="Latest data · "+mLong(latest);
+  let h=`<thead><tr><th></th>${GEOS.map(g=>`<th><span><i class="sw" style="background:${g.color}"></i>${g.name}</span></th>`).join("")}</tr></thead><tbody>`;
+  METRICS.forEach(M=>{ h+=`<tr><td>${M.label}<small>${M.small}</small></td>`+GEOS.map(g=>{ const v=D[g.k][latest]?.[M.k]; const c=yoy(g.k,latest,M.k,M.kind);
+      return `<td class="${g.k==="us"?"us":""}"><span class="v">${ok(v)?M.val(v):"—"}</span><span class="c ${ok(c)&&c>0?"up":""}">${ok(c)?sgn(c,M.kind==="pct"?1:M.d,M.kind==="pct"?"%":M.suf)+" vs. year ago":""}</span></td>`; }).join("")+"</tr>"; });
+  $("#score").innerHTML=h+"</tbody>";
+
+  // takeaways
+  const T=[];
+  const cmp=(key,kind)=>GEOS.filter(g=>g.k!=="us").map(g=>({g,v:yoy(g.k,latest,key,kind)})).filter(o=>ok(o.v));
+  const us=(key,kind)=>yoy("us",latest,key,kind);
+  const pr=cmp("price","pct"), prUS=us("price","pct");
+  if(pr.length&&ok(prUS)){ const above=pr.filter(o=>o.v>prUS).map(o=>o.g.name);
+    T.push(["Prices",`Asking prices are ${prUS>=0?"up":"down"} ${Math.abs(prUS).toFixed(1)}% nationally from a year ago. `+(above.length===pr.length?"All three local markets are rising faster.":above.length?`${above.join(" and ")} ${above.length>1?"are":"is"} running ahead of that pace.`:"Our local markets are running behind that pace.")]); }
+  const ac=cmp("active","pct"), acUS=us("active","pct");
+  if(ac.length&&ok(acUS)){ const most=ac.reduce((a,b)=>b.v>a.v?b:a);
+    T.push(["Inventory",`Homes for sale are ${acUS>=0?"up":"down"} ${Math.abs(acUS).toFixed(0)}% nationally. Locally, ${ac.map(o=>`${o.g.name} ${sgn(o.v,0)}`).join(", ")}.`]); }
+  const dm=GEOS.filter(g=>g.k!=="us").map(g=>({g,v:D[g.k][latest]?.dom})).filter(o=>ok(o.v)), dmUS=D.us[latest]?.dom;
+  if(dm.length&&ok(dmUS)){ const faster=dm.filter(o=>o.v<dmUS);
+    T.push(["Pace",`The typical U.S. listing has been on the market ${int(dmUS)} days. `+(faster.length===dm.length?"Homes in all three local markets are moving faster.":faster.length?`${faster.map(o=>o.g.name).join(" and ")} ${faster.length>1?"are":"is"} moving faster than that.`:"Local listings are taking a bit longer than that.")]); }
+  $("#takes").innerHTML=T.map(([b,t])=>`<div class="take"><b>${b}</b>${t}</div>`).join("");
+}
+
+function renderPills(){ $("#pills").innerHTML=METRICS.map(M=>`<button data-k="${M.k}" aria-pressed="${M.k===metric}">${M.label}</button>`).join("");
+  document.querySelectorAll("#pills button").forEach(b=>b.addEventListener("click",()=>{metric=b.dataset.k;renderPills();renderChart();})); }
+
+function renderChart(){
+  const M=METRICS.find(x=>x.k===metric), box=$("#chart"); box.innerHTML="";
+  $("#cdesc").textContent=M.desc+(M.plot==="yoy"?" Above 0 = higher than a year ago.":"");
+  $("#legend").innerHTML=GEOS.map(g=>`<span><i class="sw line" style="background:${g.color}${g.dash?";background:repeating-linear-gradient(90deg,"+g.color+" 0 5px,transparent 5px 8px)":""}"></i>${g.name}</span>`).join("");
+  const get=(g,m)=>M.plot==="yoy"?yoy(g,m,M.k,"pct"):(D[g][m]?D[g][m][M.k]:null);
+  let months=MONTHS.filter(m=>GEOS.some(g=>ok(get(g.k,m)))); if(range) months=months.slice(-range);
+  const W=1000,H=380,mg={t:16,r:150,b:34,l:52}, iw=W-mg.l-mg.r, ih=H-mg.t-mg.b;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":M.label+" by place over time"},box);
+  const vals=months.flatMap(m=>GEOS.map(g=>get(g.k,m))).filter(ok);
+  let lo=Math.min(...vals), hi=Math.max(...vals); if(M.plot==="yoy"){lo=Math.min(lo,0);hi=Math.max(hi,0);} else lo=Math.min(lo,0);
+  const span=hi-lo||1, raw=span/5, p=Math.pow(10,Math.floor(Math.log10(raw))), st=[1,2,2.5,5,10].map(x=>x*p).find(x=>x>=raw);
+  lo=Math.floor(lo/st)*st; hi=Math.ceil(hi/st)*st;
+  const n=months.length, x=i=>mg.l+(n===1?iw/2:iw*i/(n-1)), y=v=>mg.t+ih-(v-lo)/(hi-lo)*ih;
+  const fmtAx=M.plot==="yoy"?(v=>(v>0?"+":"")+(+v.toFixed(1))+"%"):M.unit;
+  for(let v=lo;v<=hi+1e-9;v+=st){ el("line",{x1:mg.l,x2:mg.l+iw,y1:y(v),y2:y(v),stroke:Math.abs(v)<1e-9?"#9a948b":"#efece6"},svg); txt(svg,mg.l-8,y(v)+4,fmtAx(v),{"text-anchor":"end"}); }
+  const every=n>40?12:n>14?3:1;
+  months.forEach((m,i)=>{ if((every===12?m.endsWith("-01"):i%every===0)) txt(svg,x(i),H-10,every===12?m.slice(0,4):mLbl(m),{"text-anchor":"middle",fill:"#4a4743"}); });
+  GEOS.forEach(g=>{ let d="",pen=false; months.forEach((m,i)=>{const v=get(g.k,m); if(ok(v)){d+=(pen?"L":"M")+x(i)+","+y(v);pen=true;} else pen=false;});
+    el("path",{d,fill:"none",stroke:g.color,"stroke-width":g.k==="us"?3:2,"stroke-dasharray":g.dash?"7 5":"none","stroke-linejoin":"round","stroke-linecap":"round"},svg); });
+  // end labels
+  const ends=GEOS.map(g=>{const i=[...months.keys()].reverse().find(i=>ok(get(g.k,months[i]))); return i==null?null:{g,i,v:get(g.k,months[i]),yy:y(get(g.k,months[i]))};}).filter(Boolean).sort((a,b)=>a.yy-b.yy);
+  for(let i=1;i<ends.length;i++) if(ends[i].yy-ends[i-1].yy<16) ends[i].yy=ends[i-1].yy+16;
+  ends.forEach(e=>{ el("circle",{cx:x(e.i),cy:y(e.v),r:4,fill:e.g.color,stroke:"#fff","stroke-width":2},svg);
+    txt(svg,x(n-1)+10,e.yy+4,`${e.g.name} ${M.plot==="yoy"?sgn(e.v):M.unit(e.v)}`,{fill:"#1b1a18","font-weight":600}); });
+  const tip=document.createElement("div"); tip.className="tip"; box.appendChild(tip);
+  const cross=el("line",{y1:mg.t,y2:mg.t+ih,stroke:"#1b1a18",opacity:0},svg);
+  const hit=el("rect",{x:mg.l,y:mg.t,width:iw,height:ih,fill:"transparent"},svg);
+  const move=e=>{ const b=svg.getBoundingClientRect(), s=b.width/W, px=((e.touches?e.touches[0].clientX:e.clientX)-b.left)/s;
+    const i=Math.max(0,Math.min(n-1,Math.round((px-mg.l)/iw*(n-1)))), m=months[i];
+    cross.setAttribute("x1",x(i));cross.setAttribute("x2",x(i));cross.setAttribute("opacity",.3);
+    tip.innerHTML=`<div class="t">${mLong(m)}</div>`+GEOS.map(g=>{const v=get(g.k,m);return `<div class="r"><i class="sw" style="background:${g.color}"></i>${g.name}: <b>${ok(v)?(M.plot==="yoy"?sgn(v):M.val(v)):"—"}</b></div>`;}).join("");
+    tip.style.opacity=1; const tw=tip.offsetWidth; tip.style.left=Math.max(tw/2,Math.min(box.clientWidth-tw/2,x(i)*s))+"px"; tip.style.top=(mg.t*s+4)+"px"; };
+  hit.addEventListener("mousemove",move); hit.addEventListener("touchmove",move,{passive:true});
+  hit.addEventListener("mouseleave",()=>{tip.style.opacity=0;cross.setAttribute("opacity",0);});
+}
+document.querySelectorAll(".ranges button").forEach(b=>b.addEventListener("click",()=>{range=+b.dataset.r;document.querySelectorAll(".ranges button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderChart();}));
+
+fetch("data.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{build(d);renderScore();renderPills();renderChart();})
+  .catch(()=>{ $("#asOf").textContent=""; document.querySelector(".hero h2").textContent="The comparison data is temporarily unavailable. Please check back soon."; });
+</script>
+</body>
+</html>
