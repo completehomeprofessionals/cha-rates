@@ -76,7 +76,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-si
   <div class="hero">
     <div class="eyebrow" id="asOf"></div>
     <h2>Our markets vs. the U.S.</h2>
-    <p class="sub">Latest month for homes listed for sale, with the change from a year earlier underneath.</p>
+    <p class="sub">Latest month for homes listed for sale. The smaller number underneath is the change from the same month a year earlier.</p>
     <div class="score"><table id="score"></table></div>
     <div class="takes" id="takes"></div>
   </div>
@@ -116,7 +116,7 @@ const mLong=m=>["January","February","March","April","May","June","July","August
 const mLbl=m=>MON[+m.slice(5)-1]+" ’"+m.slice(2,4);
 const ok=v=>v!==null&&v!==undefined&&!isNaN(v);
 const money=n=>"$"+Math.round(n).toLocaleString("en-US"), int=n=>Math.round(n).toLocaleString("en-US");
-const sgn=(v,d=1,suf="%")=>(v>0?"+":v<0?"−":"±")+Math.abs(v).toFixed(d)+suf;
+const sgn=(v,d=1,suf="%")=>(v>0?"+":v<0?"−":"±")+Math.abs(v).toFixed(d)+(suf===" days"&&Math.abs(v).toFixed(d)==="1"?" day":suf);
 function el(t,a={},p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function txt(p,x,y,s,a={}){const t=el("text",Object.assign({x,y,"font-size":12,fill:"#77726b"},a),p);t.textContent=s;return t;}
 
@@ -146,7 +146,7 @@ function renderScore(){
   $("#asOf").textContent="Latest data · "+mLong(latest);
   let h=`<thead><tr><th></th>${GEOS.map(g=>`<th><span><i class="sw" style="background:${g.color}"></i>${g.name}</span></th>`).join("")}</tr></thead><tbody>`;
   METRICS.forEach(M=>{ h+=`<tr><td>${M.label}<small>${M.small}</small></td>`+GEOS.map(g=>{ const v=D[g.k][latest]?.[M.k]; const c=yoy(g.k,latest,M.k,M.kind);
-      return `<td class="${g.k==="us"?"us":""}"><span class="v">${ok(v)?M.val(v):"—"}</span><span class="c ${ok(c)&&c>0?"up":""}">${ok(c)?sgn(c,M.kind==="pct"?1:M.d,M.kind==="pct"?"%":M.suf)+" vs. year ago":""}</span></td>`; }).join("")+"</tr>"; });
+      return `<td class="${g.k==="us"?"us":""}"><span class="v">${ok(v)?M.val(v):"—"}</span><span class="c ${ok(c)&&c>0?"up":""}">${ok(c)?sgn(c,M.kind==="pct"?1:M.d,M.kind==="pct"?"%":M.suf):""}</span></td>`; }).join("")+"</tr>"; });
   $("#score").innerHTML=h+"</tbody>";
 
   // takeaways
