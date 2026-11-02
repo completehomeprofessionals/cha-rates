@@ -27,7 +27,7 @@ jobs:
         run: python scripts/update_market_stats.py
       - name: Save changes
         run: |
-          if git diff --quiet; then
+          if [ -z "$(git status --porcelain compare monthly)" ]; then
             echo "No new data."
           else
             git config user.name "rate-bot"
