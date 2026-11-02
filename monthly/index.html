@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local Market Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  COMPLETE HOME ADVISORS - LOCAL MARKET PULSE (monthly MLS stats)
+  Data: monthly/data.json, refreshed daily from the Market Stats database in Notion
+  by scripts/update_market_stats.py (.github/workflows/update-market.yml).
+  To add a month: add the row in Notion. Nothing to change here.
+-->
+<style>
+:root{--ink:#1b1a18;--ink-2:#4a4743;--ink-3:#77726b;--surface:#fcfcfb;--card:#fff;--line:#e7e3dc;--grid:#efece6;--black:#141414;--sun:#F2B705;--sun-soft:#fff4cf;--law:#D9731A;--kc:#2E64A8;--jo:#1F8A70;--radius:14px}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--surface);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 40px}
+h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}h2{font-size:clamp(24px,3.2vw,32px);line-height:1.15}h3{font-size:21px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.muted{color:var(--ink-2)}.small{font-size:13px}
+.top{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+.top p{margin:10px 0 0;max-width:640px}.rule{height:3px;width:64px;background:var(--sun);border-radius:2px;margin:12px 0 0}
+.switch{display:inline-flex;flex-wrap:wrap;background:#efebe4;border-radius:999px;padding:4px;gap:4px}
+.switch button{border:0;background:transparent;font:600 14px Inter,sans-serif;color:var(--ink-2);padding:10px 16px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.switch button[aria-selected="true"]{background:var(--black);color:#fff}
+.switch .dot{width:10px;height:10px;border-radius:50%}
+.switch button:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+.hero{background:var(--black);color:#fff;border-radius:20px;padding:28px 26px 24px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(242,183,5,.22),rgba(242,183,5,0) 70%)}
+.hero .eyebrow{color:var(--sun)}.hero h2{color:#fff;margin-top:6px;max-width:860px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px;position:relative;z-index:1}
+.tile{background:#1f1f1e;border:1px solid #2e2d2b;border-radius:var(--radius);padding:14px 15px 12px}
+.tile .lbl{font-size:12.5px;color:#bdb7ae}
+.tile .num{font-family:"Cormorant Garamond",serif;font-size:38px;font-weight:700;line-height:1;margin:8px 0 6px;font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:#2b2a28;color:#e6e1d9;font-variant-numeric:tabular-nums}
+.chip.up{background:rgba(242,183,5,.16);color:var(--sun)}
+.tile .note{font-size:12px;color:#bdb7ae}
+.hero .foot{position:relative;z-index:1;margin:14px 0 0;font-size:12.5px;color:#bdb7ae}
+section{margin-top:40px}
+.sec-head{margin-bottom:14px}.sec-head p{margin:4px 0 0;max-width:760px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid3b{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 14px}
+.card h3{margin-bottom:2px}
+.big{font-family:"Cormorant Garamond",serif;font-size:40px;font-weight:700;line-height:1.05;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.lean{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:#f5f2ec;color:var(--ink-2);margin-bottom:6px}
+.lean.s{background:var(--sun-soft);color:#7a5a00}.lean.b{background:#e8f0fa;color:#24508a}
+.what{font-size:13px;color:var(--ink-2);margin:8px 0 0}
+.na{font-size:13px;color:var(--ink-3);padding:24px 0}
+.chart{position:relative}.chart svg{display:block;width:100%;height:auto;overflow:visible}.chart text{font-family:Inter,sans-serif}
+.tip{position:absolute;pointer-events:none;background:var(--black);color:#fff;font-size:12.5px;padding:7px 10px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-8px;opacity:0;transition:opacity .12s;z-index:5;font-variant-numeric:tabular-nums}
+.tip b{font-weight:600}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--grid)}th:first-child,td:first-child{text-align:left}
+thead th{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);font-weight:600;background:#faf8f4}
+tbody tr:last-child td{border-bottom:0}
+.cta{margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:var(--sun-soft);border-radius:var(--radius);padding:18px 20px}
+.cta p{margin:0;max-width:720px}
+.btn{display:inline-block;background:var(--black);color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:999px}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}footer p{margin:6px 0}
+@media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3,.grid3b{grid-template-columns:1fr}}
+@media (max-width:560px){.chart text{font-size:17px}.hero{padding:22px 18px 18px}.tile .num{font-size:32px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Complete Home Advisors · Monthly Market Report</div>
+      <h1>Local Market Pulse</h1>
+      <div class="rule"></div>
+      <p class="muted">Month-by-month MLS numbers for Lawrence, Kansas City and Johnson County: what sold, for how much, how fast, and whether buyers or sellers have the upper hand.</p>
+    </div>
+    <div class="switch" role="tablist" aria-label="Choose a market">
+      <button role="tab" data-m="Lawrence" aria-selected="true"><span class="dot" style="background:var(--law)"></span>Lawrence</button>
+      <button role="tab" data-m="Kansas City" aria-selected="false"><span class="dot" style="background:var(--kc)"></span>Kansas City</button>
+      <button role="tab" data-m="Johnson County" aria-selected="false"><span class="dot" style="background:var(--jo)"></span>Johnson County</button>
+    </div>
+  </header>
+
+  <div class="hero" aria-live="polite">
+    <div class="eyebrow" id="heroEyebrow"></div>
+    <h2 id="heroLine">Loading the latest numbers…</h2>
+    <div class="tiles" id="tiles"></div>
+    <p class="foot">Changes compare with the month before. Months of inventory = active listings ÷ homes sold that month.</p>
+  </div>
+
+  <section>
+    <div class="sec-head"><div class="eyebrow">Market balance</div><h2>Who has the upper hand?</h2>
+      <p class="muted small">Three ways to read whether the market favors buyers or sellers, and which way it's heading. The big number is the latest month; the chart shows each month.</p></div>
+    <div class="grid3" id="balance"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="eyebrow">Trends</div><h2 id="trendTitle">Month by month</h2></div>
+    <div class="grid3b">
+      <div class="card"><h3>Average sale price</h3><p class="what" style="margin:0 0 8px">Homes that closed each month</p><div class="chart" id="chPrice"></div></div>
+      <div class="card"><h3>Homes sold</h3><p class="what" style="margin:0 0 8px">Closed sales each month</p><div class="chart" id="chSold"></div></div>
+      <div class="card"><h3>Average days on market</h3><p class="what" style="margin:0 0 8px">For homes that sold each month</p><div class="chart" id="chDom"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="eyebrow">The numbers</div><h2 id="tableTitle">All months</h2></div>
+    <div class="tbl-wrap"><table id="tbl"></table></div>
+    <div class="cta">
+      <p><strong>Curious what this means for your home?</strong> Market-wide numbers are a starting point. Your home's value depends on your neighborhood, condition and today's comparable sales.</p>
+      <a class="btn" href="#" target="_top">Request a free home valuation</a>
+    </div>
+  </section>
+
+  <footer>
+    <p id="srcLine"><strong>Sources:</strong> Lawrence: Lawrence MLS (Paragon) Market Statistics, residential, city of Lawrence (MLS areas LA1–LA4), not all of Douglas County. Kansas City: Heartland MLS residential activity, whole metro on both sides of the state line. Johnson County: Heartland MLS areas 310–370. Kansas City and Johnson County figures for January–September 2026 come from KCRAR's market reports, which are measured a little differently.</p>
+    <p>Sold figures describe homes that closed during the month; active listings are a month-end snapshot. Lawrence's report doesn't include pending sales, so the contract ratio is shown for Kansas City and Johnson County only. Shown for general information; not an appraisal or financial advice.</p>
+  </footer>
+</div>
+
+<script>
+const MK={ "Lawrence":{color:"#D9731A"}, "Kansas City":{color:"#2E64A8"}, "Johnson County":{color:"#1F8A70"} };
+const $=s=>document.querySelector(s), NS="http://www.w3.org/2000/svg";
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const mLong=m=>["January","February","March","April","May","June","July","August","September","October","November","December"][+m.slice(5)-1]+" "+m.slice(0,4);
+const mShort=m=>MON[+m.slice(5)-1];
+const money=n=>"$"+Math.round(n).toLocaleString("en-US");
+const fmtK=n=>"$"+Math.round(n/1000)+"K";
+const int=n=>Math.round(n).toLocaleString("en-US");
+const pct=(n,d=1)=>(n*100).toFixed(d)+"%";
+const ok=v=>v!==null&&v!==undefined&&!isNaN(v);
+function el(t,a={},p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function txt(p,x,y,s,a={}){const t=el("text",Object.assign({x,y,"font-size":12,fill:"#77726b"},a),p);t.textContent=s;return t;}
+let ROWS=[], cur="Lawrence";
+
+function derive(r){ return Object.assign({},r,{
+  moi: ok(r.act)&&r.sold?r.act/r.sold:null,
+  absorb: ok(r.act)&&r.act?r.sold/r.act:null,
+  contract: ok(r.pend)&&ok(r.act)&&r.act?r.pend/r.act:null,
+  salesNew: ok(r.nl)&&r.nl?r.sold/r.nl:null });}
+
+/* ---------- chart: line or bars over months ---------- */
+function chart(box,rows,key,{type="line",color,fmt,axisFmt,ref,refLabel,minZero=true}={}){
+  box.innerHTML="";
+  const pts=rows.filter(r=>ok(r[key]));
+  if(pts.length<2){box.innerHTML=`<div class="na">${pts.length?"Only one month so far. The chart fills in as months are added.":"Not reported for this market."}</div>`;return;}
+  const W=520,H=230,m={t:16,r:10,b:28,l:50};
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img"},box);
+  const vals=pts.map(r=>r[key]).concat(ref!=null?[ref]:[]);
+  let lo=minZero?0:Math.min(...vals), hi=Math.max(...vals); const pad=(hi-lo)*.12||hi*.1||1; hi+=pad; if(!minZero) lo=Math.max(0,lo-pad);
+  const iw=W-m.l-m.r, ih=H-m.t-m.b, n=rows.length;
+  const x=i=>m.l+(type==="bar"?iw*(i+.5)/n:(n===1?iw/2:iw*i/(n-1))), y=v=>m.t+ih-(v-lo)/(hi-lo)*ih;
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4; el("line",{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:i?"#efece6":"#cfc9bf"},svg); txt(svg,m.l-8,y(v)+4,(axisFmt||fmt)(v),{"text-anchor":"end"});}
+  const step=Math.max(1,Math.ceil(n/8));
+  rows.forEach((r,i)=>{ if(i%step===0||i===n-1) txt(svg,x(i),H-8,mShort(r.month)+(r.month.endsWith("-01")||i===0?" ’"+r.month.slice(2,4):""),{"text-anchor":"middle",fill:"#4a4743"}); });
+  if(ref!=null){ el("line",{x1:m.l,x2:W-m.r,y1:y(ref),y2:y(ref),stroke:"#1b1a18","stroke-dasharray":"4 4",opacity:.5},svg); if(refLabel) txt(svg,W-m.r,y(ref)-6,refLabel,{"text-anchor":"end","font-size":11}); }
+  if(type==="bar"){ const bw=Math.min(28,iw/n*.6);
+    rows.forEach((r,i)=>{ if(!ok(r[key]))return; const top=y(r[key]),b=y(lo),rad=Math.min(4,bw/2);
+      el("path",{d:`M${x(i)-bw/2},${b} V${top+rad} Q${x(i)-bw/2},${top} ${x(i)-bw/2+rad},${top} H${x(i)+bw/2-rad} Q${x(i)+bw/2},${top} ${x(i)+bw/2},${top+rad} V${b} Z`,fill:color},svg); });
+  } else {
+    let d="",pen=false; rows.forEach((r,i)=>{ if(ok(r[key])){d+=(pen?"L":"M")+x(i)+","+y(r[key]);pen=true;} else pen=false; });
+    el("path",{d,fill:"none",stroke:color,"stroke-width":2.5,"stroke-linejoin":"round","stroke-linecap":"round"},svg);
+    rows.forEach((r,i)=>{ if(ok(r[key])) el("circle",{cx:x(i),cy:y(r[key]),r:4,fill:color,stroke:"#fff","stroke-width":2},svg); });
+  }
+  const last=pts.at(-1), li=rows.indexOf(last);
+  txt(svg,Math.min(x(li),W-m.r-2),y(last[key])-10,fmt(last[key]),{"text-anchor":x(li)>W-60?"end":"middle",fill:"#1b1a18","font-weight":600});
+  const tip=document.createElement("div"); tip.className="tip"; box.appendChild(tip);
+  const hit=el("rect",{x:m.l,y:m.t,width:iw,height:ih,fill:"transparent"},svg);
+  const move=e=>{ const b=svg.getBoundingClientRect(), s=b.width/W, px=((e.touches?e.touches[0].clientX:e.clientX)-b.left)/s;
+    let i=type==="bar"?Math.floor((px-m.l)/iw*n):Math.round((px-m.l)/iw*(n-1)); i=Math.max(0,Math.min(n-1,i)); const r=rows[i];
+    tip.innerHTML=`${mLong(r.month)}: <b>${ok(r[key])?fmt(r[key]):"not reported"}</b>`; tip.style.opacity=1;
+    const tw=tip.offsetWidth; tip.style.left=Math.max(tw/2,Math.min(box.clientWidth-tw/2,x(i)*s))+"px"; tip.style.top=((ok(r[key])?y(r[key]):m.t+ih/2)*s)+"px"; };
+  hit.addEventListener("mousemove",move); hit.addEventListener("touchmove",move,{passive:true});
+  hit.addEventListener("mouseleave",()=>tip.style.opacity=0);
+}
+
+function change(cur,prev,kind){
+  if(!ok(cur)||!ok(prev)||prev===0) return "";
+  let s,up;
+  if(kind==="pct"){const c=(cur-prev)/prev; up=c>=0; s=(c>=0?"+":"−")+Math.abs(c*100).toFixed(1)+"%";}
+  else if(kind==="pp"){const c=(cur-prev)*100; up=c>=0; s=(c>=0?"+":"−")+Math.abs(c).toFixed(1)+" pts";}
+  else {const c=cur-prev; up=c>=0; s=(c>=0?"+":"−")+Math.abs(c).toFixed(kind==="d1"?1:0)+(kind==="days"?" days":"");}
+  return `<span class="chip ${up?"up":""}">${s}</span>`;
+}
+
+function render(){
+  const color=MK[cur].color;
+  const rows=ROWS.filter(r=>r.market===cur).sort((a,b)=>a.month<b.month?-1:1).map(derive);
+  if(!rows.length){ $("#heroLine").textContent="No stats for this market yet."; $("#tiles").innerHTML=""; return; }
+  const L=rows.at(-1), P=rows.at(-2)||{};
+  $("#heroEyebrow").textContent=`Latest month · ${mLong(L.month)} · ${cur}`;
+  $("#heroLine").textContent=`In ${mLong(L.month)}, ${int(L.sold)} homes sold in ${cur==="Kansas City"?"the Kansas City area":cur} at an average price of ${money(L.avg)}`+(ok(L.stl)?`, and sellers got ${pct(L.stl)} of their list price on average.`:".");
+  const T=[
+    ["Homes sold",L.sold,int,P.sold,"pct"],
+    ["Average sale price",L.avg,money,P.avg,"pct"],
+    ["Median sale price",L.med,money,P.med,"pct"],
+    ["Sale-to-list price",L.stl,v=>pct(v),P.stl,"pp"],
+    ["Avg days on market",L.dom,v=>int(v),P.dom,"days"],
+    ["New listings",L.nl,int,P.nl,"pct"],
+    ["Active listings",L.act,int,P.act,"pct"],
+    ["Months of inventory",L.moi,v=>v.toFixed(1),P.moi,"d1"]
+  ].filter(t=>ok(t[1]));
+  $("#tiles").innerHTML=T.map(([l,v,f,p,k])=>`<div class="tile"><div class="lbl">${l}</div><div class="num">${f(v)}</div><div class="note">${change(v,p,k)||"&nbsp;"}</div></div>`).join("");
+
+  // balance
+  const lean=(v,hiS,loB,fmtv)=>!ok(v)?"":v>hiS?`<span class="lean s">Leans toward sellers</span>`:v<loB?`<span class="lean b">Leans toward buyers</span>`:`<span class="lean">Balanced</span>`;
+  const B=[
+    {id:"bAbs",title:"Absorption rate",key:"absorb",fmt:v=>pct(v,0),ref:.2,refLabel:"20%",lean:v=>lean(v,.2,.15),
+      what:"The share of homes for sale that sold this month. Over 20% leans toward sellers, 15–20% is balanced, under 15% leans toward buyers.",
+      note:cur==="Lawrence"?"Lawrence shows this from October 2026 on; earlier months' active listings aren't available.":""},
+    {id:"bCon",title:"Contract ratio",key:"contract",fmt:v=>pct(v,0),lean:()=>"" ,
+      what:"Homes that went under contract this month divided by homes for sale. Contracts come weeks before closings, so this moves first: rising means demand is picking up.",
+      note:cur==="Lawrence"?"Lawrence's MLS report doesn't include pending sales.":""},
+    {id:"bSN",title:"Sales vs. new listings",key:"salesNew",fmt:v=>pct(v,0),ref:1,refLabel:"100%",lean:v=>!ok(v)?"":v>=1?`<span class="lean s">Inventory shrinking</span>`:`<span class="lean b">Inventory growing</span>`,
+      what:"Homes sold compared with homes newly listed. Over 100%, homes sell faster than they hit the market and inventory shrinks.",
+      note:cur!=="Lawrence"?"Months before October 2026 come from KCRAR reports, which don't include new listings.":""}
+  ];
+  $("#balance").innerHTML=B.map(b=>{const last=[...rows].reverse().find(r=>ok(r[b.key]));
+    return `<div class="card"><h3>${b.title}</h3><div class="big">${last?b.fmt(last[b.key]):"—"}</div>${last?`<div class="what" style="margin:0 0 4px">${mLong(last.month)}</div>`+b.lean(last[b.key]):""}<div class="chart" id="${b.id}"></div><p class="what">${b.what}</p>${b.note?`<p class="what" style="color:var(--ink-3)">${b.note}</p>`:""}</div>`;}).join("");
+  B.forEach(b=>chart($("#"+b.id),rows,b.key,{color,fmt:b.fmt,ref:b.ref,refLabel:b.refLabel}));
+
+  $("#trendTitle").textContent=`${cur}, month by month`;
+  chart($("#chPrice"),rows,"avg",{color,fmt:fmtK,minZero:false});
+  chart($("#chSold"),rows,"sold",{type:"bar",color,fmt:int});
+  chart($("#chDom"),rows,"dom",{color,fmt:v=>int(v)+"d",axisFmt:v=>int(v)});
+
+  $("#tableTitle").textContent=`${cur}: all months`;
+  const cols=[["Month",r=>mLong(r.month)],["Sold",r=>r.sold,int],["Avg price",r=>r.avg,money],["Median price",r=>r.med,money],["Sale-to-list",r=>r.stl,v=>pct(v)],["Avg DOM",r=>r.dom,int],["New listings",r=>r.nl,int],["Pending",r=>r.pend,int],["Active",r=>r.act,int],["Months inv.",r=>r.moi,v=>v.toFixed(1)]];
+  const used=cols.filter((c,i)=>i===0||rows.some(r=>ok(c[1](r))));
+  $("#tbl").innerHTML=`<thead><tr>${used.map(c=>`<th>${c[0]}</th>`).join("")}</tr></thead><tbody>`+[...rows].reverse().map(r=>`<tr>${used.map((c,i)=>{const v=c[1](r);return `<td>${i===0?v:ok(v)?c[2](v):"—"}</td>`;}).join("")}</tr>`).join("")+"</tbody>";
+}
+
+document.querySelectorAll(".switch button").forEach(b=>b.addEventListener("click",()=>{cur=b.dataset.m;document.querySelectorAll(".switch button").forEach(x=>x.setAttribute("aria-selected",x===b));render();}));
+fetch("data.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{ROWS=d.rows;render();})
+  .catch(()=>{$("#heroLine").textContent="The market numbers are temporarily unavailable. Please check back soon.";});
+</script>
+</body>
+</html>
