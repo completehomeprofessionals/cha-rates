@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mortgage Rate Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  ============================================================
+  COMPLETE HOME ADVISORS - MORTGAGE RATE TRACKER
+  Source: Optimal Blue Mortgage Market Indices (OBMMI), via FRED (St. Louis Fed)
+    Conventional = OBMMIC30YF   FHA = OBMMIFHA30YF   VA = OBMMIVA30YF   USDA = OBMMIUSDA30YF
+  ------------------------------------------------------------
+  UPDATES AUTOMATICALLY
+  scripts/update_rates.py (run each weekday by .github/workflows/update-rates.yml)
+  downloads the four series from FRED and rewrites data.json. No manual edits needed.
+  ============================================================
+-->
+<style>
+:root{
+  --ink:#1b1a18; --ink-2:#4a4743; --ink-3:#77726b;
+  --surface:#fcfcfb; --card:#ffffff; --line:#e7e3dc; --grid:#efece6;
+  --black:#141414; --sun:#F2B705; --sun-soft:#fff4cf;
+  --conv:#2E64A8; --fha:#D9731A; --va:#1F8A70; --usda:#8E4FB8;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--surface);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 40px}
+h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;letter-spacing:.2px;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}
+h2{font-size:clamp(24px,3.2vw,32px);line-height:1.15}
+h3{font-size:21px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.muted{color:var(--ink-2)} .small{font-size:13px}
+.top{margin-bottom:22px}
+.top p{margin:10px 0 0;max-width:680px}
+.rule{height:3px;width:64px;background:var(--sun);border-radius:2px;margin:12px 0 0}
+
+/* hero */
+.hero{background:var(--black);color:#fff;border-radius:20px;padding:28px 26px 24px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(242,183,5,.22),rgba(242,183,5,0) 70%)}
+.hero .eyebrow{color:var(--sun)}
+.hero h2{color:#fff;margin-top:6px}
+.hero .sub{color:#cfcac2;margin:6px 0 0;max-width:760px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:22px;position:relative;z-index:1}
+.tile{background:#1f1f1e;border:1px solid #2e2d2b;border-radius:var(--radius);padding:16px 16px 14px;border-top:4px solid var(--c)}
+.tile .lbl{font-size:13px;color:#f3efe8;font-weight:600;display:flex;align-items:center;gap:8px}
+.tile .num{font-family:"Cormorant Garamond",serif;font-size:46px;font-weight:700;line-height:1;margin:10px 0 8px;color:#fff;font-variant-numeric:tabular-nums}
+.tile .num small{font-size:22px;color:#cfcac2;margin-left:2px}
+.tile .rows{display:grid;gap:4px;font-size:12.5px;color:#cfcac2}
+.tile .rows span{display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
+.tile .rows b{font-weight:600;color:#fff}
+.tile .dp{margin-top:10px;padding-top:10px;border-top:1px solid #34322f;font-size:12.5px;color:#bdb7ae}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block;flex:none}
+.sw.line{height:3px;width:16px;border-radius:2px}
+.callout{margin-top:16px;position:relative;z-index:1;border-top:1px solid #34322f;padding-top:12px;font-size:14px;color:#e6e1d9}
+.callout b{color:var(--sun);font-weight:600}
+
+section{margin-top:40px}
+.sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+.sec-head p{margin:4px 0 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+
+/* payment */
+.pay-controls{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:14px}
+.pay-controls label{font-weight:600;font-size:14px}
+.pay-controls input[type=range]{flex:1;min-width:180px;accent-color:var(--black)}
+.amt{font-family:"Cormorant Garamond",serif;font-size:30px;font-weight:700;min-width:140px;font-variant-numeric:tabular-nums}
+.pay-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.pay{border:1px solid var(--line);border-radius:12px;padding:14px;border-left:4px solid var(--c)}
+.pay .t{font-size:13px;font-weight:600;color:var(--ink-2)}
+.pay .v{font-family:"Cormorant Garamond",serif;font-size:32px;font-weight:700;line-height:1.1;margin:4px 0;font-variant-numeric:tabular-nums}
+.pay .v small{font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:var(--ink-3)}
+.pay .d{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* chart */
+.ranges{display:inline-flex;background:#efebe4;border-radius:999px;padding:4px;gap:2px}
+.ranges button{border:0;background:transparent;font:600 13px Inter,sans-serif;color:var(--ink-2);padding:7px 13px;border-radius:999px;cursor:pointer}
+.ranges button[aria-pressed="true"]{background:var(--black);color:#fff}
+.ranges button:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--ink-2);margin:0 0 8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:Inter,sans-serif}
+.tip{position:absolute;pointer-events:none;background:var(--black);color:#fff;font-size:12.5px;padding:8px 10px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-8px;opacity:0;transition:opacity .12s;z-index:5;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.tip .t{font-weight:600;margin-bottom:3px}
+.tip .r{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--grid)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;background:#faf8f4}
+thead th span{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end}
+tbody tr:last-child td{border-bottom:0}
+tr.ytd td{background:#fffbea}
+td .lo{font-weight:700}
+
+/* loan types */
+.types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.type{border-left:4px solid var(--c)}
+.type h3{display:flex;align-items:center;gap:10px}
+.type .who{font-size:13px;color:var(--ink-3);margin:2px 0 8px}
+.type ul{margin:6px 0 0;padding-left:18px}
+.type li{margin:5px 0}
+
+.cta{margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:var(--sun-soft);border-radius:var(--radius);padding:18px 20px}
+.cta p{margin:0;max-width:720px}
+.btn{display:inline-block;background:var(--black);color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:999px}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+footer p{margin:6px 0}
+
+@media (max-width:900px){ .tiles,.pay-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:720px){ .types{grid-template-columns:1fr} .hero{padding:22px 18px 18px} .tile .num{font-size:40px} }
+@media (max-width:560px){ .chart text{font-size:17px} }
+@media (max-width:420px){ .tiles,.pay-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Complete Home Advisors · Rate Tracker</div>
+    <h1>Mortgage Rates by Loan Type</h1>
+    <div class="rule"></div>
+    <p class="muted">Average 30-year fixed rates for Conventional, FHA, VA and USDA loans, based on rates actually locked by lenders nationwide. See where rates are today, how they've moved since 2017, and what they mean for a monthly payment.</p>
+  </header>
+
+  <div class="hero">
+    <div class="eyebrow" id="asOf"></div>
+    <h2>Today's average 30-year fixed rates</h2>
+    <p class="sub">National averages. Your rate will depend on your credit score, down payment, loan amount and the lender.</p>
+    <div class="tiles" id="tiles"></div>
+    <div class="callout" id="callout"></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><div><div class="eyebrow">What it means for your payment</div><h2>Monthly payment by loan type</h2>
+      <p class="muted small">Principal and interest on a 30-year loan at today's average rate. Doesn't include taxes, insurance or mortgage insurance.</p></div></div>
+    <div class="card">
+      <div class="pay-controls">
+        <label for="loan">Loan amount</label>
+        <input type="range" id="loan" min="100000" max="800000" step="5000" value="300000" aria-describedby="amt">
+        <div class="amt" id="amt"></div>
+      </div>
+      <div class="pay-grid" id="pay"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><div class="eyebrow">Trends</div><h2>How rates have moved</h2><p class="muted small">Monthly average 30-year fixed rate. End labels show the latest month's average, so they can differ from today's rate above.</p></div>
+      <div class="ranges" role="group" aria-label="Time range">
+        <button data-r="12">1Y</button><button data-r="24">2Y</button><button data-r="60">5Y</button><button data-r="0" aria-pressed="true">All</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="legend" id="legend"></div>
+      <div class="chart" id="chart"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><div class="eyebrow">Year over year</div><h2>Average rate by year</h2><p class="muted small">Lowest rate each year in bold</p></div></div>
+    <div class="tbl-wrap"><table id="tbl"></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><div class="eyebrow">Know your options</div><h2>Which loan fits?</h2></div></div>
+    <div class="types">
+      <div class="card type" style="--c:var(--conv)"><h3><i class="sw" style="background:var(--conv)"></i>Conventional</h3><div class="who">Not backed by the government; the most common loan</div>
+        <ul><li>As little as 3% down for some first-time buyers. 20% down avoids private mortgage insurance (PMI).</li><li>PMI can be removed once you reach enough equity.</li><li>Usually best for buyers with strong credit and a larger down payment.</li></ul></div>
+      <div class="card type" style="--c:var(--fha)"><h3><i class="sw" style="background:var(--fha)"></i>FHA</h3><div class="who">Insured by the Federal Housing Administration</div>
+        <ul><li>As little as 3.5% down with a qualifying credit score.</li><li>More flexible credit guidelines than conventional loans.</li><li>Comes with an upfront and an annual mortgage insurance premium.</li></ul></div>
+      <div class="card type" style="--c:var(--va)"><h3><i class="sw" style="background:var(--va)"></i>VA</h3><div class="who">Guaranteed by the Department of Veterans Affairs</div>
+        <ul><li>For eligible veterans, active-duty service members and some surviving spouses.</li><li>No down payment required and no monthly mortgage insurance.</li><li>A one-time funding fee applies (some borrowers are exempt).</li></ul></div>
+      <div class="card type" style="--c:var(--usda)"><h3><i class="sw" style="background:var(--usda)"></i>USDA</h3><div class="who">Guaranteed by the U.S. Department of Agriculture</div>
+        <ul><li>No down payment required for homes in USDA-eligible rural and suburban areas.</li><li>Household income limits apply.</li><li>Comes with an upfront and an annual guarantee fee.</li></ul></div>
+    </div>
+    <div class="cta">
+      <p><strong>Not sure which loan is right for you?</strong> We can connect you with a trusted local lender and help you understand what you can afford before you start shopping.</p>
+      <a class="btn" href="#" target="_top">Talk with Victoria</a>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Source:</strong> Optimal Blue Mortgage Market Indices, retrieved from FRED, Federal Reserve Bank of St. Louis. Rates are national averages of 30-year fixed rates locked by lenders. "Conventional" is the conforming loan index. The current year in the table is year-to-date.</p>
+    <p>This is general market information, not a rate quote, loan offer or financial advice. Your actual rate and payment depend on your credit, down payment, property, points and lender. Talk with a licensed mortgage lender for a personalized quote.</p>
+  </footer>
+</div>
+
+<script>
+/* ===================== DATA (edit here) ===================== */
+const LOANS = [
+  { key:"conv", name:"Conventional", color:"#2E64A8", down:"3%–20% down" },
+  { key:"fha",  name:"FHA",          color:"#D9731A", down:"3.5% down minimum" },
+  { key:"va",   name:"VA",           color:"#1F8A70", down:"0% down (eligible veterans)" },
+  { key:"usda", name:"USDA",         color:"#8E4FB8", down:"0% down (eligible areas)" }
+];
+// Rates are loaded from data.json, which a GitHub Action refreshes every weekday from FRED.
+let CURRENT, MONTHLY, rows;
+/* ============================================================ */
+const $=s=>document.querySelector(s);
+const NS="http://www.w3.org/2000/svg";
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const mLabel=m=>MONTHS[+m.slice(5,7)-1]+" "+m.slice(0,4);
+const dLabel=d=>{const [y,m,dd]=d.split("-");return `${MONTHS[+m-1]} ${+dd}, ${y}`;};
+const sgn=(v,d=2)=>(v>0?"+":v<0?"−":"±")+Math.abs(v).toFixed(d);
+const money=n=>"$"+Math.round(n).toLocaleString("en-US");
+const pmt=(P,r)=>{const i=r/100/12,n=360;return P*i/(1-Math.pow(1+i,-n));};
+function el(t,a={},p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function txt(p,x,y,s,a={}){const t=el("text",Object.assign({x,y,"font-size":12,fill:"#77726b"},a),p);t.textContent=s;return t;}
+function start(){
+  rows=MONTHLY.map(r=>({m:r[0],conv:r[1],fha:r[2],va:r[3],usda:r[4]}));
+
+  /* ---------- hero ---------- */
+  $("#asOf").textContent="As of "+dLabel(CURRENT.asOf);
+  $("#tiles").innerHTML=LOANS.map(L=>{
+    const r=CURRENT.rate[L.key], ma=r-CURRENT.monthAgo[L.key], ya=r-CURRENT.yearAgo[L.key];
+    return `<div class="tile" style="--c:${L.color}"><div class="lbl"><i class="sw" style="background:${L.color}"></i>${L.name}</div>
+      <div class="num">${r.toFixed(2)}<small>%</small></div>
+      <div class="rows"><span>vs. 1 month ago <b>${sgn(ma)}</b></span><span>vs. 1 year ago <b>${sgn(ya)}</b></span></div>
+      <div class="dp">${L.down}</div></div>`;}).join("");
+  (function(){
+    const conv=CURRENT.rate.conv, ya=CURRENT.yearAgo.conv;
+    const last=rows.at(-1); // most recent month average
+    const higher=[...rows].slice(0,-1).reverse().find(r=>r.conv>=last.conv);
+    const lowest=LOANS.reduce((a,b)=>CURRENT.rate[b.key]<CURRENT.rate[a.key]?b:a);
+    const extra=pmt(300000,conv)-pmt(300000,ya);
+    $("#callout").innerHTML=`<b>The big picture:</b> Rates have risen about ${(conv-ya).toFixed(1)} points over the past year${higher?`, and ${mLabel(last.m)}'s conventional average was the highest since ${mLabel(higher.m)}`:""}. On a $300,000 conventional loan, that adds about ${money(extra)} a month compared with a year ago. ${lowest.name} loans currently carry the lowest average rate.`;
+  })();
+
+  /* ---------- payment comparison ---------- */
+  function renderPay(){
+    const P=+$("#loan").value; $("#amt").textContent=money(P);
+    $("#pay").innerHTML=LOANS.map(L=>{const now=pmt(P,CURRENT.rate[L.key]),ago=pmt(P,CURRENT.yearAgo[L.key]);
+      return `<div class="pay" style="--c:${L.color}"><div class="t">${L.name} · ${CURRENT.rate[L.key].toFixed(2)}%</div>
+        <div class="v">${money(now)}<small> /mo</small></div>
+        <div class="d">${now>=ago?"+":"−"}${money(Math.abs(now-ago))}/mo vs. a year ago</div></div>`;}).join("");
+  }
+  $("#loan").addEventListener("input",renderPay); renderPay();
+
+  /* ---------- line chart ---------- */
+  $("#legend").innerHTML=LOANS.map(L=>`<span><i class="sw line" style="background:${L.color}"></i>${L.name}</span>`).join("");
+  let range=0;
+  function renderChart(){
+    const c=$("#chart"); c.innerHTML="";
+    const data=range?rows.slice(-range):rows;
+    const W=1000,H=380,m={t:16,r:118,b:34,l:44};
+    const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Monthly average 30-year fixed mortgage rates by loan type"},c);
+    const vals=data.flatMap(r=>LOANS.map(L=>r[L.key]));
+    const lo=Math.floor(Math.min(...vals)-.25), hi=Math.ceil(Math.max(...vals)+.25);
+    const iw=W-m.l-m.r, ih=H-m.t-m.b;
+    const x=i=>m.l+(data.length===1?iw/2:iw*i/(data.length-1)), y=v=>m.t+ih-(v-lo)/(hi-lo)*ih;
+    const stepV=(hi-lo)>4?1:.5;
+    for(let v=lo;v<=hi+1e-9;v+=stepV){el("line",{x1:m.l,x2:m.l+iw,y1:y(v),y2:y(v),stroke:v===lo?"#cfc9bf":"#efece6"},svg);txt(svg,m.l-8,y(v)+4,(stepV<1?v.toFixed(1):v)+"%",{"text-anchor":"end"});}
+    // x labels
+    data.forEach((r,i)=>{ const mo=r.m.slice(5);
+      const show = range && range<=24 ? (+mo%3===1) : mo==="01";
+      if(show){ el("line",{x1:x(i),x2:x(i),y1:m.t+ih,y2:m.t+ih+5,stroke:"#cfc9bf"},svg); txt(svg,x(i),H-10,range&&range<=24?mLabel(r.m).replace(" 20"," ’"):r.m.slice(0,4),{"text-anchor":"middle",fill:"#4a4743"}); }});
+    LOANS.forEach(L=>el("polyline",{points:data.map((r,i)=>x(i)+","+y(r[L.key])).join(" "),fill:"none",stroke:L.color,"stroke-width":2,"stroke-linejoin":"round","stroke-linecap":"round"},svg));
+    // end labels, de-collided
+    const ends=LOANS.map(L=>({L,v:data.at(-1)[L.key],y:y(data.at(-1)[L.key])})).sort((a,b)=>a.y-b.y);
+    for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<16) ends[i].y=ends[i-1].y+16;
+    ends.forEach(e=>{ el("circle",{cx:x(data.length-1),cy:y(e.v),r:4,fill:e.L.color,stroke:"#fff","stroke-width":2},svg);
+      txt(svg,x(data.length-1)+10,e.y+4,`${e.L.name} ${e.v.toFixed(2)}%`,{fill:"#1b1a18","font-weight":600}); });
+    // hover
+    const tip=document.createElement("div"); tip.className="tip"; c.appendChild(tip);
+    const cross=el("line",{y1:m.t,y2:m.t+ih,stroke:"#1b1a18",opacity:0},svg);
+    const dots=LOANS.map(L=>el("circle",{r:4.5,fill:L.color,stroke:"#fff","stroke-width":2,opacity:0},svg));
+    const hit=el("rect",{x:m.l,y:m.t,width:iw,height:ih,fill:"transparent"},svg);
+    const move=e=>{ const b=svg.getBoundingClientRect(), s=b.width/W, px=((e.touches?e.touches[0].clientX:e.clientX)-b.left)/s;
+      const i=Math.max(0,Math.min(data.length-1,Math.round((px-m.l)/iw*(data.length-1)))); const r=data[i];
+      cross.setAttribute("x1",x(i));cross.setAttribute("x2",x(i));cross.setAttribute("opacity",.3);
+      dots.forEach((d,k)=>{d.setAttribute("cx",x(i));d.setAttribute("cy",y(r[LOANS[k].key]));d.setAttribute("opacity",1);});
+      tip.innerHTML=`<div class="t">${mLabel(r.m)}</div>`+[...LOANS].sort((a,b)=>r[b.key]-r[a.key]).map(L=>`<div class="r"><i class="sw" style="background:${L.color}"></i>${L.name}: <b>${r[L.key].toFixed(2)}%</b></div>`).join("");
+      tip.style.opacity=1; const tw=tip.offsetWidth, cw=c.clientWidth; tip.style.left=Math.max(tw/2,Math.min(cw-tw/2,x(i)*s))+"px"; tip.style.top=(m.t*s+4)+"px"; };
+    hit.addEventListener("mousemove",move); hit.addEventListener("touchmove",move,{passive:true});
+    hit.addEventListener("mouseleave",()=>{tip.style.opacity=0;cross.setAttribute("opacity",0);dots.forEach(d=>d.setAttribute("opacity",0));});
+  }
+  document.querySelectorAll(".ranges button").forEach(b=>b.addEventListener("click",()=>{
+    range=+b.dataset.r; document.querySelectorAll(".ranges button").forEach(x=>x.setAttribute("aria-pressed",x===b)); renderChart(); }));
+  renderChart();
+
+  /* ---------- annual table ---------- */
+  (function(){
+    const years=[...new Set(rows.map(r=>r.m.slice(0,4)))];
+    const lastYear=years.at(-1), partial=rows.filter(r=>r.m.startsWith(lastYear)).length<12;
+    const avg=(y,k)=>{const rs=rows.filter(r=>r.m.startsWith(y));return rs.reduce((a,b)=>a+b[k],0)/rs.length;};
+    let h=`<thead><tr><th>Year</th>${LOANS.map(L=>`<th><span><i class="sw" style="background:${L.color}"></i>${L.name}</span></th>`).join("")}<th>Change (Conv.)</th></tr></thead><tbody>`;
+    years.slice().reverse().forEach((y,idx,arr)=>{
+      const a=LOANS.map(L=>avg(y,L.key)), min=Math.min(...a);
+      const prev=years[years.indexOf(y)-1]; const ch=prev?avg(y,"conv")-avg(prev,"conv"):null;
+      const isYtd=y===lastYear&&partial;
+      h+=`<tr class="${isYtd?"ytd":""}"><td>${y}${isYtd?" (YTD)":""}</td>${a.map(v=>`<td>${v===min?`<span class="lo">${v.toFixed(2)}%</span>`:v.toFixed(2)+"%"}</td>`).join("")}<td>${ch==null?"—":sgn(ch)+" pts"}</td></tr>`;
+    });
+    $("#tbl").innerHTML=h+"</tbody>";
+  })();
+}
+fetch('data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(d=>{
+  CURRENT=d.current; MONTHLY=d.monthly; start();
+}).catch(()=>{ document.querySelector('.hero h2').textContent='Rates are temporarily unavailable. Please check back soon.'; });
+</script>
+</body>
+</html>
