@@ -6,7 +6,7 @@ needed), then writes:
   monthly  - monthly averages since 2017 (the current month is month-to-date)
 Uses only the Python standard library.
 """
-import csv, io, json, sys, urllib.request
+import csv, io, json, os, sys, time, urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -16,11 +16,35 @@ OUT = Path(__file__).resolve().parent.parent / "data.json"
 
 
 def fetch(series_id):
-    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}&cosd={START}"
-    req = urllib.request.Request(url, headers={"User-Agent": "cha-rate-dashboard/1.0"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        text = r.read().decode("utf-8")
-    return parse(text)
+    """Download one series. Uses the FRED API if a FRED_API_KEY secret is set,
+    otherwise FRED's public CSV download. Retries because FRED can be slow."""
+    key = os.environ.get("FRED_API_KEY", "").strip()
+    if key:
+        url = ("https://api.stlouisfed.org/fred/series/observations?series_id="
+               f"{series_id}&observation_start={START}&file_type=json&api_key={key}")
+    else:
+        url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}&cosd={START}"
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; cha-rate-dashboard/1.1)", "Accept": "*/*"}
+    last_err = None
+    for attempt in range(1, 5):
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=120) as r:
+                text = r.read().decode("utf-8")
+            return parse_api(text) if key else parse(text)
+        except Exception as e:  # network hiccup: wait and try again
+            last_err = e
+            print(f"{series_id}: attempt {attempt} failed ({e}); retrying...")
+            time.sleep(15 * attempt)
+    raise SystemExit(f"Could not download {series_id} from FRED: {last_err}")
+
+
+def parse_api(text):
+    out = {}
+    for ob in json.loads(text)["observations"]:
+        if ob["value"] not in ("", "."):
+            out[date.fromisoformat(ob["date"])] = float(ob["value"])
+    return out
 
 
 def parse(text):
