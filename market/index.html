@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lawrence &amp; KC Market Outlook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  ============================================================
+  COMPLETE HOME ADVISORS - HOUSING MARKET DASHBOARD
+  Source: WSU Center for Real Estate / CEDBR Kansas Housing Markets Forecast
+  ------------------------------------------------------------
+  HOW TO UPDATE WHEN THE 2027 FORECAST COMES OUT
+  1. In MARKET_DATA below, for each market:
+     - Replace the 2025 row with the actuals from the new booklet and set type: "actual"
+       (also fill in volume + avgPrice for 2025 once WSU reports them).
+     - Change the 2026 row to type: "estimate" with the new booklet's numbers.
+     - Add a 2027 row with type: "forecast".
+     - Update the "current" block (months of supply, insights, as-of dates).
+  2. Update EDITION below (year, published date, mortgage-rate outlook).
+  Everything on the page (hero tiles, charts, tables) redraws from this data.
+  ============================================================
+-->
+<style>
+:root{
+  --ink:#1b1a18; --ink-2:#4a4743; --ink-3:#77726b;
+  --surface:#fcfcfb; --card:#ffffff; --line:#e7e3dc; --grid:#efece6;
+  --black:#141414; --sun:#F2B705; --sun-soft:#fff4cf;
+  --law:#D9731A; --kc:#2E64A8;
+  --good:#2f7d4f; --warn:#b26a00;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--surface);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 40px}
+h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;letter-spacing:.2px;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}
+h2{font-size:clamp(24px,3.2vw,32px);line-height:1.15}
+h3{font-size:21px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+.top p{margin:8px 0 0;max-width:640px}
+.rule{height:3px;width:64px;background:var(--sun);border-radius:2px;margin:12px 0 0}
+
+/* market switch */
+.switch{display:inline-flex;background:#efebe4;border-radius:999px;padding:4px;gap:4px}
+.switch button{border:0;background:transparent;font:600 14px Inter,sans-serif;color:var(--ink-2);padding:10px 18px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.switch button[aria-selected="true"]{background:var(--black);color:#fff}
+.switch .dot{width:10px;height:10px;border-radius:50%}
+.switch button:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+
+/* hero */
+.hero{background:var(--black);color:#fff;border-radius:20px;padding:28px 26px 24px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(242,183,5,.22),rgba(242,183,5,0) 70%)}
+.hero .eyebrow{color:var(--sun)}
+.hero h2{color:#fff;margin-top:6px}
+.hero .sub{color:#cfcac2;margin:6px 0 0;max-width:720px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:22px;position:relative;z-index:1}
+.tile{background:#1f1f1e;border:1px solid #2e2d2b;border-radius:var(--radius);padding:16px 16px 14px}
+.tile .lbl{font-size:12.5px;color:#bdb7ae;font-weight:500}
+.tile .num{font-family:"Cormorant Garamond",serif;font-size:44px;font-weight:700;line-height:1;margin:8px 0 6px;color:#fff;font-variant-numeric:tabular-nums}
+.tile .num small{font-size:20px;font-weight:600;color:#cfcac2;margin-left:3px}
+.tile .note{font-size:12.5px;color:#cfcac2}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:#2b2a28;color:#f3efe8}
+.chip.up{background:rgba(242,183,5,.16);color:var(--sun)}
+.chip.down{background:#2b2a28;color:#e6e1d9}
+.meter{margin-top:10px}
+.meter svg{display:block;width:100%;height:auto}
+.insights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px;position:relative;z-index:1}
+.ins{border-top:1px solid #34322f;padding-top:12px;font-size:13.5px;color:#e6e1d9}
+.ins b{display:block;color:var(--sun);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+
+/* sections */
+section{margin-top:40px}
+.sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:14px}
+.sec-head p{margin:4px 0 0}
+.since{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.since > div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.since .k{font-size:12px;color:var(--ink-3);font-weight:500}
+.since .v{font-family:"Cormorant Garamond",serif;font-size:30px;font-weight:700;line-height:1.1;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.since .s{font-size:12.5px;color:var(--ink-2)}
+@media (max-width:900px){.since{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 14px}
+.card h3{margin-bottom:2px}
+.card .desc{font-size:13px;color:var(--ink-2);margin:0 0 8px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-2);margin:4px 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.sw.line{height:3px;width:16px;border-radius:2px}
+.sw.hatch{background:repeating-linear-gradient(135deg,#bbb 0 2px,#fff 2px 5px);border:1px solid #bbb}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:Inter,sans-serif}
+.yoy{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.yoy span{font-size:12px;color:var(--ink-2);background:#f5f2ec;border-radius:999px;padding:3px 9px;font-variant-numeric:tabular-nums}
+.yoy b{font-weight:600;color:var(--ink)}
+
+/* tooltip */
+.tip{position:absolute;pointer-events:none;background:var(--black);color:#fff;font-size:12.5px;padding:8px 10px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-10px;opacity:0;transition:opacity .12s;z-index:5;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.tip .t{font-weight:600;margin-bottom:2px}
+.tip .r{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:880px;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--grid)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;background:#faf8f4}
+thead th .tag{display:block;font-size:10.5px;letter-spacing:.04em;text-transform:none;color:var(--ink-3);font-weight:500}
+thead th.fc{background:var(--sun-soft);color:var(--ink)}
+td.fc{background:#fffbea}
+tbody tr:last-child td{border-bottom:0}
+td .ch{display:block;font-size:12px;color:var(--ink-3)}
+
+/* takeaways */
+.take{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.take .card{border-left:4px solid var(--sun)}
+.take ul{margin:8px 0 4px;padding-left:18px}
+.take li{margin:6px 0}
+.cta{margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:var(--sun-soft);border-radius:var(--radius);padding:18px 20px}
+.cta p{margin:0}
+.btn{display:inline-block;background:var(--black);color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:999px}
+.btn:focus-visible{outline:2px solid var(--law);outline-offset:2px}
+
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+footer p{margin:6px 0}
+
+@media (max-width:900px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .insights{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .grid2,.take{grid-template-columns:1fr}
+  .hero{padding:22px 18px 18px}
+  .tile .num{font-size:38px}
+}
+@media (max-width:560px){
+  .chart text{font-size:17px}
+}
+@media (max-width:420px){
+  .tiles{grid-template-columns:1fr}
+  .switch button{padding:9px 13px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">Complete Home Advisors · Market Report</div>
+      <h1>Lawrence &amp; Kansas City<br>Housing Market Outlook</h1>
+      <div class="rule"></div>
+      <p class="muted" id="intro"></p>
+    </div>
+    <div class="switch" role="tablist" aria-label="Choose a market">
+      <button role="tab" data-m="lawrence" aria-selected="true"><span class="dot" style="background:var(--law)"></span>Lawrence</button>
+      <button role="tab" data-m="kc" aria-selected="false"><span class="dot" style="background:var(--kc)"></span>Kansas City</button>
+    </div>
+  </header>
+
+  <!-- CURRENT FORECAST -->
+  <div class="hero" aria-live="polite">
+    <div class="eyebrow" id="heroEyebrow"></div>
+    <h2 id="heroTitle"></h2>
+    <p class="sub" id="heroSub"></p>
+    <div class="tiles" id="tiles"></div>
+    <div class="insights" id="insights"></div>
+  </div>
+
+  <!-- TRENDS -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="eyebrow">Year-over-year trends</div>
+        <h2 id="trendTitle"></h2>
+        <p class="muted small">Solid = reported actuals · Striped / dashed = WSU estimate and forecast</p>
+      </div>
+    </div>
+    <div class="since" id="since"></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Home price appreciation</h3>
+        <p class="desc">Year-over-year change in home values, both markets</p>
+        <div class="legend"><span><i class="sw line" style="background:var(--law)"></i>Lawrence</span><span><i class="sw line" style="background:var(--kc)"></i>Kansas City</span></div>
+        <div class="chart" id="chAppr"></div>
+      </div>
+      <div class="card">
+        <h3>Average sale price</h3>
+        <p class="desc">All closed sales (new and existing homes), both markets</p>
+        <div class="legend"><span><i class="sw" style="background:var(--law)"></i>Lawrence</span><span><i class="sw" style="background:var(--kc)"></i>Kansas City</span></div>
+        <div class="chart" id="chPrice"></div>
+      </div>
+      <div class="card">
+        <h3 id="salesTitle">Total home sales</h3>
+        <p class="desc" id="salesDesc"></p>
+        <div class="legend"><span><i class="sw" id="swSales"></i>Actual</span><span><i class="sw hatch"></i>Estimate / forecast</span></div>
+        <div class="chart" id="chSales"></div>
+        <div class="yoy" id="yoySales"></div>
+      </div>
+      <div class="card">
+        <h3 id="permTitle">New home construction</h3>
+        <p class="desc" id="permDesc"></p>
+        <div class="legend"><span><i class="sw" id="swPerm"></i>Actual</span><span><i class="sw hatch"></i>Estimate / forecast</span></div>
+        <div class="chart" id="chPerm"></div>
+        <div class="yoy" id="yoyPerm"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <section>
+    <div class="sec-head"><div><div class="eyebrow">The numbers</div><h2 id="tableTitle"></h2></div></div>
+    <div class="tbl-wrap"><table id="tbl"></table></div>
+  </section>
+
+  <!-- TAKEAWAYS -->
+  <section>
+    <div class="sec-head"><div><div class="eyebrow">What it means for you</div><h2>Reading the market</h2></div></div>
+    <div class="take" id="take"></div>
+    <div class="cta">
+      <p><strong>Thinking about selling?</strong> These are area-wide numbers. Your home's value depends on your street, your home's condition, and today's comparable sales.</p>
+      <a class="btn" href="#" target="_top" id="ctaLink">Request a free home valuation</a>
+    </div>
+  </section>
+
+  <footer>
+    <p id="srcLine"></p>
+    <p>Lawrence figures cover the Lawrence metro (Douglas County) as reported by the Lawrence Board of REALTORS®. Kansas City sales, volume and price figures include all closed transactions in the Heartland MLS (Kansas and Missouri); KC permits and appreciation are for the Kansas City, KS-MO metro. Appreciation is the year-over-year change in the FHFA all-transactions house price index (4th quarter). Permits are single-family building permits. History comes from past WSU forecast editions: 2022–2024 from the 2026 edition, 2021 from the 2025 edition, 2019–2020 from the 2024 edition, and 2018 from the 2023 edition. Each year uses the newest edition that reports it as final. WSU revises past figures slightly between editions (and changed its Lawrence data source from the Lawrence MLS to the Lawrence Board of REALTORS® in the 2026 edition), so year-over-year changes that cross editions are approximate. Where WSU published a year-over-year change, the dashboard shows WSU's figure.</p>
+    <p>Forecasts are projections, not guarantees. Complete Home Advisors shares this information for general education; it is not financial advice.</p>
+  </footer>
+</div>
+
+<script>
+/* ===================== DATA (edit here) ===================== */
+const EDITION = {
+  year: 2026,
+  published: "November 2025",
+  source: "Wichita State University Center for Real Estate & Center for Economic Development and Business Research (CEDBR), 2026 Kansas Housing Markets Forecast",
+  mortgageOutlook: "about 6.4%",            // MBA projected average for the coming year
+  balancedMin: 4, balancedMax: 6             // months of supply in a balanced market
+};
+
+// type: "actual" | "estimate" | "forecast"
+// src = which WSU edition the year's numbers come from (always the newest edition that reports that year as actual)
+// salesChg / permitsChg = WSU's published year-over-year % change (used instead of recalculating, so numbers match the booklet)
+const MARKET_DATA = {
+  lawrence: {
+    name: "Lawrence", area: "Lawrence metro (Douglas County)", color: "#D9731A",
+    years: [
+      { year: 2018, type: "actual",   sales: 1491, permits: 419, appreciation: 5.4, volume: 356, avgPrice: 238817, src: 2023 },
+      { year: 2019, type: "actual",   sales: 1484, permits: 256, appreciation: 5.2, volume: 365, avgPrice: 245839, src: 2024 },
+      { year: 2020, type: "actual",   sales: 1591, permits: 287, appreciation: 5.4, volume: 421, avgPrice: 264888, src: 2024 },
+      { year: 2021, type: "actual",   sales: 1546, salesChg: -2.8, permits: 262, permitsChg: -8.7, appreciation: 14.9, volume: 466, avgPrice: 301658, src: 2025 },
+      { year: 2022, type: "actual",   sales: 1355, salesChg: -14.0, permits: 182, permitsChg: -27.9, appreciation: 10.7, volume: 450, avgPrice: 329366 },
+      { year: 2023, type: "actual",   sales: 1069, salesChg: -21.1, permits: 155, permitsChg: -14.8, appreciation: 7.1,  volume: 366, avgPrice: 339351 },
+      { year: 2024, type: "actual",   sales: 1147, salesChg: 7.3, permits: 196, permitsChg: 26.5, appreciation: 3.9,  volume: 410, avgPrice: 354172 },
+      { year: 2025, type: "estimate", sales: 1178, salesChg: 2.7, permits: 226, permitsChg: 15.1, appreciation: 5.0 },
+      { year: 2026, type: "forecast", sales: 1141, salesChg: -3.2, permits: 237, permitsChg: 5.2, appreciation: 5.0 }
+    ],
+    current: {
+      monthsSupply: 2.1, monthsSupplyAsOf: "Sept. 2025",
+      summary: "Sales are leveling off after the 2022 peak, inventory is slowly improving, and price growth is settling back toward its long-term pace of about 5% a year. The market still favors sellers heading into 2026.",
+      insights: [
+        { h: "Pricing matters", t: "Homes still on the market at month-end are priced about 15% higher than homes that sold, and they sit roughly 18 days longer." },
+        { h: "Inventory", t: "About 2.1 months of supply, up from well under 2 months in 2021–22, but still short of a balanced 4–6 months." },
+        { h: "Buyers", t: "Buyers are cautious about the total cost of owning. Many younger households are renting for now, so 2026 sales may ease slightly." }
+      ]
+    }
+  },
+  kc: {
+    name: "Kansas City", area: "Kansas City metro (KS & MO)", color: "#2E64A8",
+    years: [
+      { year: 2018, type: "actual",   sales: 40556, permits: 5608, appreciation: 7.3, volume: 9620, avgPrice: 237209, src: 2023 },
+      { year: 2019, type: "actual",   sales: 40677, permits: 4811, appreciation: 5.7, volume: 10070, avgPrice: 247554, src: 2024 },
+      { year: 2020, type: "actual",   sales: 43915, permits: 6173, appreciation: 7.6, volume: 11933, avgPrice: 271718, src: 2024 },
+      { year: 2021, type: "actual",   sales: 45916, salesChg: 4.6, permits: 7051, permitsChg: 14.2, appreciation: 15.7, volume: 13980, avgPrice: 304474, src: 2025 },
+      { year: 2022, type: "actual",   sales: 41216, salesChg: -11.3, permits: 5375, permitsChg: -26.3, appreciation: 11.8, volume: 13672, avgPrice: 329447 },
+      { year: 2023, type: "actual",   sales: 36180, salesChg: -12.2, permits: 4349, permitsChg: -19.1, appreciation: 7.2,  volume: 12414, avgPrice: 340699 },
+      { year: 2024, type: "actual",   sales: 36451, salesChg: 0.7, permits: 4735, permitsChg: 8.9, appreciation: 5.0,  volume: 13040, avgPrice: 354990 },
+      { year: 2025, type: "estimate", sales: 37284, salesChg: 2.3, permits: 4880, permitsChg: 3.1, appreciation: 5.0 },
+      { year: 2026, type: "forecast", sales: 38128, salesChg: 2.3, permits: 4939, permitsChg: 1.2, appreciation: 5.0 }
+    ],
+    current: {
+      monthsSupply: 2.7, monthsSupplyAsOf: "Sept. 2025",
+      summary: "A slow, steady recovery: sales are expected to grow about 2.3% in both 2025 and 2026, inventory is rising, and appreciation is holding near its long-run norm of about 5%.",
+      insights: [
+        { h: "Days on market", t: "Homes that sell within the month average about 43 days on market, which is longer than in recent years." },
+        { h: "Negotiation", t: "Homes are closing at about 98% of original list price, so buyers have a little more room to negotiate." },
+        { h: "Inventory", t: "About 2.7 months of supply, the highest in several years but still below a balanced 4–6 months." }
+      ]
+    }
+  }
+};
+/* ============================================================ */
+
+const $ = s => document.querySelector(s);
+const fmtInt = n => n.toLocaleString("en-US");
+const fmtMoney = n => "$" + Math.round(n).toLocaleString("en-US");
+const fmtK = n => "$" + Math.round(n/1000) + "K";
+const pct = (n, d=1) => (n>0?"+":n<0?"−":"") + Math.abs(n).toFixed(d) + "%";
+const chg = (a,b) => (b-a)/a*100;
+const ych = (rows,i,key) => rows[i][key+"Chg"]!=null ? rows[i][key+"Chg"] : chg(rows[i-1][key],rows[i][key]);
+const tagFor = t => t==="actual" ? "" : (t==="estimate" ? "Est." : "Forecast");
+const NS = "http://www.w3.org/2000/svg";
+let current = "lawrence";
+
+function el(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs={}){ const t=el("text",Object.assign({x,y,"font-size":12,fill:"#77726b"},attrs),parent); t.textContent=s; return t; }
+
+function niceStep(v){ const p=Math.pow(10,Math.floor(Math.log10(v))); const m=v/p; return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*p; }
+function niceMax(v){ const p=Math.pow(10,Math.floor(Math.log10(v))); const m=v/p; const n=m<=1.2?1.2:m<=1.5?1.5:m<=2?2:m<=2.5?2.5:m<=3?3:m<=4?4:m<=5?5:m<=6?6:m<=8?8:10; return n*p; }
+
+/* ---------- tooltip ---------- */
+function tipFor(container){
+  let t=container.querySelector(".tip"); if(!t){ t=document.createElement("div"); t.className="tip"; container.appendChild(t); }
+  return {
+    show(html, x, y){ t.innerHTML=html; t.style.opacity=1;
+      const w=container.clientWidth; const tw=t.offsetWidth; let left=x;
+      left=Math.max(tw/2+2, Math.min(w-tw/2-2, left)); t.style.left=left+"px"; t.style.top=y+"px"; },
+    hide(){ t.style.opacity=0; }
+  };
+}
+function scaleFactor(svg){ const r=svg.getBoundingClientRect(); return r.width/svg.viewBox.baseVal.width; }
+
+/* ---------- bar chart (single market) ---------- */
+function barChart(container, rows, key, color, fmt, label){
+  container.innerHTML="";
+  const W=520,H=250,m={t:28,r:8,b:30,l:52};
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":label},container);
+  const defs=el("defs",{},svg);
+  const pat=el("pattern",{id:"h"+container.id,width:6,height:6,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"},defs);
+  el("rect",{width:6,height:6,fill:color,"fill-opacity":.22},pat);
+  el("line",{x1:0,y1:0,x2:0,y2:6,stroke:color,"stroke-width":2.4},pat);
+  const dmax=Math.max(...rows.map(r=>r[key]));
+  const stepV=niceStep(dmax/4), max=Math.ceil(dmax*1.08/stepV)*stepV, nT=Math.round(max/stepV);
+  const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const y=v=>m.t+ih-(v/max)*ih;
+  for(let i=0;i<=nT;i++){ const v=stepV*i; el("line",{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:i?"#efece6":"#cfc9bf","stroke-width":1},svg); txt(svg,m.l-8,y(v)+4,fmt(v,true),{"text-anchor":"end"}); }
+  const step=iw/rows.length, bw=Math.min(46,step*.56);
+  const tip=tipFor(container);
+  rows.forEach((r,i)=>{
+    const cx=m.l+step*i+step/2, x=cx-bw/2, top=y(r[key]), h=m.t+ih-top;
+    const actual=r.type==="actual";
+    const g=el("g",{},svg);
+    const rad=4;
+    el("path",{d:`M${x},${m.t+ih} V${top+rad} Q${x},${top} ${x+rad},${top} H${x+bw-rad} Q${x+bw},${top} ${x+bw},${top+rad} V${m.t+ih} Z`,fill:actual?color:`url(#h${container.id})`,stroke:actual?"none":color,"stroke-width":actual?0:1.4},g);
+    txt(g,cx,top-8,fmt(r[key]),{"text-anchor":"middle",fill:"#1b1a18","font-weight":600});
+    txt(g,cx,H-10,r.year+(actual?"":"*"),{"text-anchor":"middle",fill:"#4a4743"});
+    const hit=el("rect",{x:cx-step/2,y:m.t,width:step,height:ih+m.b,fill:"transparent"},g);
+    const prev=rows[i-1];
+    hit.addEventListener("mousemove",()=>{ const s=scaleFactor(svg);
+      tip.show(`<div class="t">${r.year}${actual?"":" · "+tagFor(r.type)}</div><div class="r">${fmt(r[key])}${prev?` <span style="color:#bdb7ae">(${pct(ych(rows,i,key))} vs ${prev.year})</span>`:""}</div>`, cx*s, top*s); });
+    hit.addEventListener("mouseleave",()=>tip.hide());
+  });
+}
+
+/* ---------- appreciation line chart (both markets) ---------- */
+function lineChart(container){
+  container.innerHTML="";
+  const W=520,H=250,m={t:20,r:84,b:30,l:40};
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Home price appreciation by year, Lawrence and Kansas City"},container);
+  const keys=["lawrence","kc"];
+  const years=MARKET_DATA.lawrence.years.map(r=>r.year);
+  const max=Math.ceil(Math.max(...keys.flatMap(k=>MARKET_DATA[k].years.map(r=>r.appreciation)))/4)*4;
+  const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const x=i=>m.l+iw*i/(years.length-1), y=v=>m.t+ih-(v/max)*ih;
+  for(let v=0;v<=max;v+=4){ el("line",{x1:m.l,x2:m.l+iw,y1:y(v),y2:y(v),stroke:v?"#efece6":"#cfc9bf"},svg); txt(svg,m.l-8,y(v)+4,v+"%",{"text-anchor":"end"}); }
+  // forecast zone
+  const fi=years.findIndex((yr,i)=>MARKET_DATA.lawrence.years[i].type!=="actual");
+  el("rect",{x:x(fi)-iw/(years.length-1)/2,y:m.t,width:x(years.length-1)-x(fi)+iw/(years.length-1)/2,height:ih,fill:"#fff8e0"},svg);
+  txt(svg,(x(fi)+x(years.length-1))/2,m.t+14,"Est. / Forecast",{"text-anchor":"middle","font-size":11,fill:"#8a6a00","font-weight":600});
+  years.forEach((yr,i)=>txt(svg,x(i),H-10,yr+(MARKET_DATA.lawrence.years[i].type==="actual"?"":"*"),{"text-anchor":"middle",fill:"#4a4743"}));
+  keys.forEach(k=>{
+    const d=MARKET_DATA[k], pts=d.years.map((r,i)=>[x(i),y(r.appreciation)]);
+    const solid=pts.slice(0,fi), dash=pts.slice(fi-1);
+    const isSel=k===current;
+    el("polyline",{points:solid.map(p=>p.join(",")).join(" "),fill:"none",stroke:d.color,"stroke-width":isSel?3:2,"stroke-linejoin":"round","stroke-linecap":"round",opacity:isSel?1:.75},svg);
+    el("polyline",{points:dash.map(p=>p.join(",")).join(" "),fill:"none",stroke:d.color,"stroke-width":isSel?3:2,"stroke-dasharray":"5 5","stroke-linecap":"round",opacity:isSel?1:.75},svg);
+    pts.forEach((p,i)=>el("circle",{cx:p[0],cy:p[1],r:4.5,fill:d.years[i].type==="actual"?d.color:"#fff",stroke:d.color,"stroke-width":2},svg));
+  });
+  // direct labels at start (peak) and end
+  const lastY=MARKET_DATA.lawrence.years.at(-1).appreciation;
+  txt(svg,x(years.length-1)+10,y(lastY)-4,"Both: 5.0%",{fill:"#1b1a18","font-weight":600});
+  txt(svg,x(years.length-1)+10,y(lastY)+12,"forecast",{fill:"#77726b","font-size":11});
+  // hover
+  const tip=tipFor(container);
+  const cross=el("line",{y1:m.t,y2:m.t+ih,stroke:"#1b1a18","stroke-width":1,opacity:0},svg);
+  const hit=el("rect",{x:m.l-10,y:m.t,width:iw+20,height:ih,fill:"transparent"},svg);
+  hit.addEventListener("mousemove",e=>{
+    const s=scaleFactor(svg), r=svg.getBoundingClientRect();
+    const px=(e.clientX-r.left)/s; const i=Math.max(0,Math.min(years.length-1,Math.round((px-m.l)/(iw/(years.length-1)))));
+    cross.setAttribute("x1",x(i)); cross.setAttribute("x2",x(i)); cross.setAttribute("opacity",.35);
+    const t=MARKET_DATA.lawrence.years[i].type;
+    tip.show(`<div class="t">${years[i]}${t==="actual"?"":" · "+tagFor(t)}</div>`+keys.map(k=>`<div class="r"><i class="sw" style="background:${MARKET_DATA[k].color}"></i>${MARKET_DATA[k].name}: <b>${MARKET_DATA[k].years[i].appreciation.toFixed(1)}%</b></div>`).join(""), x(i)*s, m.t*s+4);
+  });
+  hit.addEventListener("mouseleave",()=>{tip.hide();cross.setAttribute("opacity",0);});
+}
+
+/* ---------- grouped price bars (both markets) ---------- */
+function priceChart(container){
+  container.innerHTML="";
+  const W=520,H=250,m={t:28,r:8,b:30,l:52};
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Average sale price by year, Lawrence and Kansas City"},container);
+  const keys=["lawrence","kc"];
+  const rows=MARKET_DATA.lawrence.years.filter(r=>r.avgPrice).map(r=>r.year);
+  const get=(k,yr)=>MARKET_DATA[k].years.find(r=>r.year===yr);
+  const lo=200000, hi=375000;
+  const iw=W-m.l-m.r, ih=H-m.t-m.b, y=v=>m.t+ih-((v-lo)/(hi-lo))*ih;
+  for(let v=lo;v<=hi;v+=25000){ el("line",{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:v===lo?"#cfc9bf":"#efece6"},svg); txt(svg,m.l-8,y(v)+4,fmtK(v),{"text-anchor":"end"}); }
+  txt(svg,m.l,m.t-12,"Axis starts at $200K",{"font-size":10.5,fill:"#9a948b"});
+  const step=iw/rows.length, bw=Math.min(40,step*.3), gap=2;
+  const tip=tipFor(container);
+  rows.forEach((yr,i)=>{
+    const cx=m.l+step*i+step/2;
+    keys.forEach((k,j)=>{
+      const v=get(k,yr).avgPrice, x=j===0?cx-bw-gap/2:cx+gap/2, top=y(v), rad=4;
+      el("path",{d:`M${x},${m.t+ih} V${top+rad} Q${x},${top} ${x+rad},${top} H${x+bw-rad} Q${x+bw},${top} ${x+bw},${top+rad} V${m.t+ih} Z`,fill:MARKET_DATA[k].color,opacity:k===current?1:.85},svg);
+    });
+    // label the selected market only
+    const vs=get(current,yr).avgPrice; const xs=current==="lawrence"?cx-bw/2-gap/2:cx+bw/2+gap/2;
+    txt(svg,xs,y(vs)-8,fmtK(vs),{"text-anchor":"middle",fill:"#1b1a18","font-weight":600});
+    txt(svg,cx,H-10,yr,{"text-anchor":"middle",fill:"#4a4743"});
+    const hit=el("rect",{x:cx-step/2,y:m.t,width:step,height:ih+m.b,fill:"transparent"},svg);
+    hit.addEventListener("mousemove",()=>{ const s=scaleFactor(svg);
+      tip.show(`<div class="t">${yr}</div>`+keys.map(k=>{ const r=get(k,yr), p=get(k,yr-1); return `<div class="r"><i class="sw" style="background:${MARKET_DATA[k].color}"></i>${MARKET_DATA[k].name}: <b>${fmtMoney(r.avgPrice)}</b>${p&&p.avgPrice?` <span style="color:#bdb7ae">(${pct(chg(p.avgPrice,r.avgPrice))})</span>`:""}</div>`;}).join(""), cx*s, y(Math.max(...keys.map(k=>get(k,yr).avgPrice)))*s); });
+    hit.addEventListener("mouseleave",()=>tip.hide());
+  });
+}
+
+/* ---------- months-of-supply meter ---------- */
+function meterSVG(v){
+  const W=240,H=46,max=8,x=n=>8+(W-16)*n/max;
+  const b0=x(EDITION.balancedMin), b1=x(EDITION.balancedMax);
+  return `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <rect x="8" y="10" width="${W-16}" height="8" rx="4" fill="#3a3835"/>
+    <rect x="8" y="10" width="${b0-8}" height="8" rx="4" fill="rgba(242,183,5,.35)"/>
+    <rect x="${b0}" y="10" width="${b1-b0}" height="8" fill="#6b6862"/>
+    <circle cx="${x(v)}" cy="14" r="7" fill="#F2B705" stroke="#141414" stroke-width="2"/>
+    <text x="8" y="36" font-size="10" fill="#bdb7ae" font-family="Inter">Seller's</text>
+    <text x="${(b0+b1)/2}" y="36" font-size="10" fill="#bdb7ae" text-anchor="middle" font-family="Inter">Balanced 4–6</text>
+    <text x="${W-8}" y="36" font-size="10" fill="#bdb7ae" text-anchor="end" font-family="Inter">Buyer's</text></svg>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const d=MARKET_DATA[current];
+  const ys=d.years, fc=ys.find(r=>r.type==="forecast"), est=ys.find(r=>r.type==="estimate");
+  const lastActual=[...ys].reverse().find(r=>r.type==="actual"&&r.sales);
+  document.documentElement.style.setProperty("--sel",d.color);
+
+  $("#intro").textContent=`Year-over-year trends and the ${EDITION.year} forecast from Wichita State University's Center for Real Estate, published ${EDITION.published}. Choose a market to explore.`;
+  $("#heroEyebrow").textContent=`${EDITION.year} Forecast · ${d.area}`;
+  $("#heroTitle").textContent=`What's happening in ${d.name} right now`;
+  $("#heroSub").textContent=d.current.summary;
+
+  const salesCh=fc.salesChg??chg(est.sales,fc.sales), permCh=fc.permitsChg??chg(est.permits,fc.permits);
+  $("#tiles").innerHTML=`
+    <div class="tile"><div class="lbl">Projected home price growth, ${fc.year}</div>
+      <div class="num">${pct(fc.appreciation)}</div>
+      <div class="note"><span class="chip up">Long-term norm ≈ 5%</span></div></div>
+    <div class="tile"><div class="lbl">Projected home sales, ${fc.year}</div>
+      <div class="num">${fmtInt(fc.sales)}</div>
+      <div class="note"><span class="chip ${salesCh>=0?"up":"down"}">${pct(salesCh)}</span> vs ${est.year} est. (${fmtInt(est.sales)})</div></div>
+    <div class="tile"><div class="lbl">Months of inventory, ${d.current.monthsSupplyAsOf}</div>
+      <div class="num">${d.current.monthsSupply.toFixed(1)}<small>mo</small></div>
+      <div class="meter">${meterSVG(d.current.monthsSupply)}</div></div>
+    <div class="tile"><div class="lbl">New-home permits, ${fc.year}</div>
+      <div class="num">${fmtInt(fc.permits)}</div>
+      <div class="note"><span class="chip up">${pct(permCh)}</span> vs ${est.year} est.</div></div>`;
+  $("#insights").innerHTML=d.current.insights.map(i=>`<div class="ins"><b>${i.h}</b>${i.t}</div>`).concat([]).join("");
+
+  $("#trendTitle").textContent=`${d.name}, ${ys.find(r=>r.sales).year}–${fc.year}`;
+  $("#salesTitle").textContent=`Total home sales · ${d.name}`;
+  $("#salesDesc").textContent=`Closed sales per year, ${d.area}`;
+  $("#permTitle").textContent=`New home construction · ${d.name}`;
+  $("#permDesc").textContent=`Single-family building permits per year`;
+  $("#swSales").style.background=d.color; $("#swPerm").style.background=d.color;
+
+  const sRows=ys.filter(r=>r.sales);
+  const acts=sRows.filter(r=>r.type==="actual"&&r.avgPrice), first=acts[0], lastA=acts.at(-1);
+  const peak=sRows.filter(r=>r.type==="actual").reduce((a,b)=>b.sales>a.sales?b:a);
+  const hot=ys.filter(r=>r.type==="actual").reduce((a,b)=>b.appreciation>a.appreciation?b:a);
+  const pre=ys.filter(r=>r.year<2021&&r.type==="actual"); const preAvg=pre.reduce((a,b)=>a+b.appreciation,0)/pre.length;
+  $("#since").innerHTML=`
+    <div><div class="k">Average sale price, ${first.year} → ${lastA.year}</div><div class="v">${pct(chg(first.avgPrice,lastA.avgPrice),0)}</div><div class="s">${fmtMoney(first.avgPrice)} → ${fmtMoney(lastA.avgPrice)}</div></div>
+    <div><div class="k">Peak sales year</div><div class="v">${peak.year}</div><div class="s">${fmtInt(peak.sales)} sales · ${lastA.year}: ${fmtInt(lastA.sales)} (${pct(chg(peak.sales,lastA.sales),0)})</div></div>
+    <div><div class="k">Biggest price jump</div><div class="v">${pct(hot.appreciation)}</div><div class="s">in ${hot.year}, at the height of the pandemic boom</div></div>
+    <div><div class="k">${fc.year} vs. pre-pandemic pace</div><div class="v">${pct(fc.appreciation)}</div><div class="s">vs. ${preAvg.toFixed(1)}% a year in ${pre[0].year}–${pre.at(-1).year}</div></div>`;
+  barChart($("#chSales"),sRows,"sales",d.color,(v,ax)=>ax&&v>=10000?Math.round(v/1000)+"K":fmtInt(Math.round(v)),`Total home sales by year, ${d.name}`);
+  barChart($("#chPerm"),sRows,"permits",d.color,(v,ax)=>ax&&v>=10000?Math.round(v/1000)+"K":fmtInt(Math.round(v)),`Building permits by year, ${d.name}`);
+  const yoy=(key)=>sRows.slice(1).map((r,i)=>`<span>${r.year}${r.type==="actual"?"":"*"} <b>${pct(ych(sRows,i+1,key))}</b></span>`).join("");
+  $("#yoySales").innerHTML=yoy("sales"); $("#yoyPerm").innerHTML=yoy("permits");
+  lineChart($("#chAppr")); priceChart($("#chPrice"));
+
+  // table
+  $("#tableTitle").textContent=`${d.name} at a glance`;
+  const tr=ys.filter(r=>r.sales);
+  const head=`<thead><tr><th>Metric</th>${tr.map(r=>`<th class="${r.type!=="actual"?"fc":""}">${r.year}<span class="tag">${r.type==="actual"?"Actual":tagFor(r.type)}</span></th>`).join("")}</tr></thead>`;
+  const cell=(r,i,key,f)=>{ const v=r[key]; if(v==null) return `<td class="${r.type!=="actual"?"fc":""}">—</td>`;
+    const p=tr[i-1]; const c=p&&p[key]!=null?`<span class="ch">${pct(ych(tr,i,key))}</span>`:""; return `<td class="${r.type!=="actual"?"fc":""}">${f(v)}${c}</td>`; };
+  const row=(label,key,f,showChg=true)=>`<tr><td>${label}</td>${tr.map((r,i)=>showChg?cell(r,i,key,f):`<td class="${r.type!=="actual"?"fc":""}">${r[key]==null?"—":f(r[key])}</td>`).join("")}</tr>`;
+  $("#tbl").innerHTML=head+"<tbody>"+
+    row("Total home sales","sales",fmtInt)+
+    row("Average sale price","avgPrice",fmtMoney)+
+    row("Sales volume","volume",v=>"$"+fmtInt(v)+"M")+
+    row("Home price appreciation","appreciation",v=>v.toFixed(1)+"%",false)+
+    row("Single-family permits","permits",fmtInt)+
+    "</tbody>";
+
+  // takeaways
+  const sellers = current==="lawrence"
+    ? [`Inventory is still low (${d.current.monthsSupply} months), so well-prepared homes keep the advantage.`,
+       `Price it right from day one. Homes that sit are priced about 15% above what's selling and stay on the market about 18 days longer.`,
+       `Values are expected to rise about ${fc.appreciation.toFixed(0)}% in ${fc.year}, a steadier pace than the double-digit jumps of 2021–22.`]
+    : [`Inventory is up to about ${d.current.monthsSupply} months, so you have more competition than a few years ago.`,
+       `Expect about 43 days on market and offers near 98% of original list price. A strong first impression and accurate pricing matter.`,
+       `Values are expected to rise about ${fc.appreciation.toFixed(0)}% in ${fc.year}, steady growth rather than a spike.`];
+  const buyers = [
+    `There are more homes to choose from than in 2021–22, and a bit more room to negotiate.`,
+    `The Mortgage Bankers Association projects rates averaging ${EDITION.mortgageOutlook} over the next year. Don't plan on a return to 3%.`,
+    `Prices are forecast to keep rising about 5% a year, so waiting for prices to fall may not pay off.`];
+  $("#take").innerHTML=`<div class="card"><h3>If you're selling</h3><ul>${sellers.map(s=>`<li>${s}</li>`).join("")}</ul></div>
+    <div class="card"><h3>If you're buying</h3><ul>${buyers.map(s=>`<li>${s}</li>`).join("")}</ul></div>`;
+
+  $("#srcLine").innerHTML=`<strong>Source:</strong> ${EDITION.source}. * marks WSU estimates (${est.year}) and forecasts (${fc.year}).`;
+}
+
+document.querySelectorAll(".switch button").forEach(b=>b.addEventListener("click",()=>{
+  current=b.dataset.m;
+  document.querySelectorAll(".switch button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  render();
+}));
+render();
+</script>
+</body>
+</html>
