@@ -7,27 +7,27 @@
   "usda": "OBMMIUSDA30YF"
  },
  "current": {
-  "asOf": "2026-11-20",
+  "asOf": "2026-11-23",
   "rate": {
-   "conv": 7.205,
-   "fha": 7.054,
-   "va": 6.901,
-   "usda": 7.081
+   "conv": 7.171,
+   "fha": 6.977,
+   "va": 6.838,
+   "usda": 7.033
   },
   "monthAgo": {
-   "conv": 7.326,
-   "fha": 7.135,
-   "va": 6.954,
-   "usda": 7.264
+   "conv": 7.229,
+   "fha": 7.077,
+   "va": 6.896,
+   "usda": 7.129
   },
   "yearAgo": {
-   "conv": 6.236,
-   "fha": 6.129,
-   "va": 5.896,
-   "usda": 6.008
+   "conv": 6.224,
+   "fha": 6.044,
+   "va": 5.799,
+   "usda": 5.973
   },
-  "monthAgoDate": "2026-10-20",
-  "yearAgoDate": "2025-11-20"
+  "monthAgoDate": "2026-10-23",
+  "yearAgoDate": "2025-11-21"
  },
  "monthly": [
   [
